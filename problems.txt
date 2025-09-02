@@ -1,0 +1,7 @@
+Problems we have fixed:
+- python2 to python3 (used bash: $ 2to3 -w "filename") followed guide from lektion 1(after)
+- run_forever.sh also think is fixed by using shellcheck for analysing the file and vim for correction
+- whoknows.db is changed for the real whoknows.db
+
+Problems we haven´t fixed:
+- python3 ./app.py dosent work it says flask is nowhere to be found

@@ -3,6 +3,7 @@
 ## Dependency Graph:
 ### https://is.gd/VIYoWi
 
+---
 
 ## Agreed conventions new version of the application - Ruby / Sinatra
 According to https://rubystyle.guide/ 
@@ -44,3 +45,4 @@ According to https://rubystyle.guide/
   </tbody>
 </table>
 
+---

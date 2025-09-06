@@ -1,6 +1,7 @@
 # WhoKnows has New owners Now WeKnows is the new!
 
 ## Dependency Graph:
+First edition, headlines only
 ### https://is.gd/VIYoWi
 
 ---

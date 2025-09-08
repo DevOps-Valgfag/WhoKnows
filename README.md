@@ -36,6 +36,9 @@ Flow and commands in order to avoid irreparable conflicts:
 Make PR to dev in GitHub UI.
 
 After PR has been reviewed and merged:
-git checkout dev 
+
+git checkout dev
+
 git pull 
+
 Now you can make a new feature branch from the updated dev branch and work on.

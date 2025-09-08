@@ -19,3 +19,21 @@ According to https://rubystyle.guide/
 
 
 ---
+## Agreed branching strategy - Git Flow
+We will work in feature branches, make PR to Dev branch and when the application is ready for deployment, this will be from the Main branch.
+
+Flow and commands in order to avoid irreparable conflicts:
+| git checkout featureBranch |  |
+| git add . | |
+| git commit -m "descriptive message" | |
+| git fetch origin | gets all changes from remote, but do not change the local code |
+| git rebase origin/dev | moves/adds local commits to the latest version of dev from remote* |
+| git push -u origin featureBranch | pusher din rebased branch til remote, klar til PR |
+*If there are any conflicts during rebase, solve these in the IDE (the save files, run git add <file> + git rebase --continue)
+
+Make PR to dev in GitHub UI.
+
+After PR has been reviewed and merged:
+|git checkout dev | 
+|git pull |
+Now you can make a new feature branch from the updated dev branch and work on.

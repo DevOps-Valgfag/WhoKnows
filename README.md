@@ -31,6 +31,7 @@ Flow and commands in order to avoid irreparable conflicts:
 | git fetch origin | gets all changes from remote, but do not change the local code |
 | git rebase origin/dev | moves/adds local commits to the latest version of dev from remote* |
 | git push -u origin featureBranch | pusher din rebased branch til remote, klar til PR |
+
 *If there are any conflicts during rebase, solve these in the IDE (the save files, run git add <file> + git rebase --continue)
 
 Make PR to dev in GitHub UI.

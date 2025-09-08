@@ -23,6 +23,8 @@ According to https://rubystyle.guide/
 We will work in feature branches, make PR to Dev branch and when the application is ready for deployment, this will be from the Main branch.
 
 Flow and commands in order to avoid irreparable conflicts:
+| Command | Desc.  | 
+|-----------------|-------------|
 | git checkout featureBranch |  |
 | git add . | |
 | git commit -m "descriptive message" | |
@@ -34,6 +36,6 @@ Flow and commands in order to avoid irreparable conflicts:
 Make PR to dev in GitHub UI.
 
 After PR has been reviewed and merged:
-|git checkout dev | 
-|git pull |
+git checkout dev 
+git pull 
 Now you can make a new feature branch from the updated dev branch and work on.

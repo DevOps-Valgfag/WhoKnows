@@ -53,6 +53,6 @@ get "/" do
   "Sinatra + OpenAPI demo! Besøg /docs for Swagger UI"
 end
 
-# Start server hvis modular style (Sinatra::Base), men her i classic style gøres det automatisk
+# Nedenstående run kommando starter server hvis modular style (Sinatra::Base), men her i classic style gøres det automatisk
 # run! if __FILE__ == $0
 

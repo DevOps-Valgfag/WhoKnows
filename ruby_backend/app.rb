@@ -1,8 +1,9 @@
-# app.rb
 require 'sinatra'
-require 'sinatra/reloader' if development? # Auto-reloads on changes
+# The 'if development?' block ensures this only runs on your local machine
+if development?
+  require 'sinatra/reloader'
+end
 
-# A simple test route
 get '/' do
-  'Hello from Sinatra!'
+  'Hello from my first Sinatra app on Windows!'
 end

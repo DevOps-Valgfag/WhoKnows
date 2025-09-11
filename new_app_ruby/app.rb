@@ -8,7 +8,7 @@ require "bcrypt"
 
 configure do
   enable :sessions
-  set :session_secret, "development key" # SKAL ændres til en stærk, hemmelig nøgle i produktion!
+  set :session_secret, "dette_er_ikke_god_maade_at_bruge_secretkey_så_den_skal_aendres_til_en_meget_lang_og_tilfældig_streng_der_er_over_64_bytes_lang" # TODO lav min 64 tegn lang nøgle og gem som miljøvar
 end
 
 # ----------------------------
@@ -155,7 +155,7 @@ post "/api/register" do
   email = params["email"]
   password = params["password"]
  
-  # Validering
+  # Validation
   error = nil
   if username.to_s.empty?
     error = 'You have to enter a username'
@@ -177,16 +177,17 @@ post "/api/register" do
   end
 
   if error
-    json(error: error)
+    # Hvis der er en fejl, viser vi registreringssiden igen med en fejlbesked
+    @error = error
+    erb :register
   else
-    hashed_password = hash_password(password)
-
+    hashed_password = BCrypt::Password.create(password)
     db = connect_db
     # Sørg for at din `users` tabel har en kolonne for `password` der er bred nok til en bcrypt hash (typisk VARCHAR(60))
     db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
     db.close
-
-    json(message: "You were successfully registered and can login now")
+    # Succesfuld registrering, omdiriger til login-siden
+    redirect '/login'
   end
 end
 

@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: WhoKnows
+  version: 0.1.0
+
+paths:
+  /:
+    get:
+      summary: Serve Root Page
+      operationId: serve_root_page
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /weather:
+    get:
+      summary: Serve Weather Page
+      operationId: serve_weather_page
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /register:
+    get:
+      summary: Serve Register Page
+      operationId: serve_register_page
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /login:
+    get:
+      summary: Serve Login Page
+      operationId: serve_login_page
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api/search:
+    get:
+      summary: Search
+      operationId: search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Language code (e.g., "en")
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestValidationError"
+
+  /api/weather:
+    get:
+      summary: Weather
+      operationId: weather
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StandardResponse"
+
+  /api/register:
+    post:
+      summary: Register
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/BodyRegister"
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+
+  /api/login:
+    post:
+      summary: Login
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/BodyLogin"
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "422":
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+
+  /api/logout:
+    get:
+      summary: Logout
+      operationId: logout
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+components:
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          nullable: true
+          description: HTTP status code
+        message:
+          type: string
+          nullable: true
+          description: Response message
+
+    BodyLogin:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    BodyRegister:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        password2:
+          type: string
+
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+
+    RequestValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          default: 422
+          description: HTTP status code. Defaulting to 422 Unprocessable Entity.
+        message:
+          type: string
+          nullable: true
+          description: Detail of the validation error
+
+    SearchResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          description: List of data dictionaries with mixed types.
+          items:
+            type: object
+
+    StandardResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          description: Dictionary with mixed types.
+
+    ValidationError:
+      type: object
+      required: [loc, msg, type]
+      properties:
+        loc:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: integer
+        msg:
+          type: string
+        type:
+          type: string

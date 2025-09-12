@@ -25,3 +25,4 @@ group :test do
   gem 'rack-test'
   gem 'capybara'
 end
+gem "rackup", "~> 2.2"

@@ -5,10 +5,12 @@ require "yaml"
 require "json"
 require "sqlite3"
 require "bcrypt"
+require "sinatra/flash"
 
 configure do
   enable :sessions
   set :session_secret, "dette_er_ikke_god_maade_at_bruge_secretkey_så_den_skal_aendres_til_en_meget_lang_og_tilfældig_streng_der_er_over_64_bytes_lang" # TODO lav min 64 tegn lang nøgle og gem som miljøvar
+  register Sinatra::Flash
 end
 
 # ----------------------------
@@ -21,7 +23,7 @@ set :bind, "0.0.0.0"
 # ----------------------------
 # Database path
 # ----------------------------
-DB_PATH = File.expand_path("./whoknows.db",__FILE__)
+DB_PATH = File.join(settings.root, 'whoknows.db')
 
 # Helper: åbn DB
 def connect_db
@@ -154,6 +156,7 @@ post "/api/register" do
   username = params["username"]
   email = params["email"]
   password = params["password"]
+  password2 = params["password2"] 
  
   # Validation
   error = nil

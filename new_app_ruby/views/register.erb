@@ -1,5 +1,9 @@
 <h2>Sign Up</h2>
-<% if @error %><div class="error"><strong>Error:</strong> <%= @error %></div><% end %>
+<% if flash[:error] %>
+  <div class="error">
+    <strong>Error:</strong> <%= flash[:error] %>
+  </div>
+<% end %>
 <form action="/api/register" method="POST">
   <dl>
     <dt>Username:</dt>

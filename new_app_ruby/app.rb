@@ -21,7 +21,7 @@ set :bind, "0.0.0.0"
 # ----------------------------
 # Database path
 # ----------------------------
-DB_PATH = File.expand_path("../whoknows.db",__FILE__)
+DB_PATH = File.expand_path("./whoknows.db",__FILE__)
 
 # Helper: åbn DB
 def connect_db

@@ -143,6 +143,8 @@ post "/api/login" do
     # Hvis login er succesfuldt
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
     json(message: "You were logged in", user_id: user['id'])
+
+    redirect '/api/search'
   end
 
   if error

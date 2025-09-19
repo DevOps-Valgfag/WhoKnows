@@ -114,6 +114,7 @@ get "/api/search" do
   db.results_as_hash = true
 
   @search_results = if q
+    # This part correctly handles the search query from the form
     db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
   else
     []
@@ -121,7 +122,8 @@ get "/api/search" do
 
   db.close
 
-  erb :search, locals: { query: q }
+  # This renders the search page with the results
+  erb :search
 end
 
 # Login (POST)

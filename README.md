@@ -1,3 +1,15 @@
+
+## Folder Structure
+
+├── new_app_ruby/       # Main application folder
+│   ├── app.rb          # Main Sinatra application file
+│   ├── views/          # HTML templates for rendering
+│   ├── public/         # Static assets (CSS, JS, images)
+│   ├── db/             # Database-related files
+│   └── .env            # Environment variables
+├── [README.md](http://_vscodecontentref_/1)           # Project documentation
+└── open_api.yaml       # OpenAPI specification
+
 ## Setting Up the Project Locally
 
 To get the project up and running on your local machine, please follow these steps.

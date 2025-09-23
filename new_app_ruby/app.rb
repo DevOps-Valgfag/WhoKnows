@@ -6,7 +6,7 @@ require "sqlite3"
 require "bcrypt"
 require "sinatra/flash"
 require "dotenv/load"
-require "httparty"
+require "httparty" # Gem for making HTTP requests
 
 configure do
   enable :sessions
@@ -220,28 +220,48 @@ get "/register" do
   erb :register
 end
 
-# New Weather Endpoint (with Forecast)
-get "/weather" do
-  # You can change the city or make it dynamic, e.g., city = params['city']
-  @city = "Copenhagen"
-  url = "https://wttr.in/#{@city}?format=j1"
+# ----------------------------
+# NEW: Weather Endpoints
+# ----------------------------
+
+# Helper method to fetch weather data from the external service
+def get_weather_data(city)
+  url = "https://wttr.in/#{city}?format=j1"
   response = HTTParty.get(url)
+  return nil unless response.code == 200
+  JSON.parse(response.body)
+end
 
-  if response.code == 200
-    weather_data = JSON.parse(response.body)
-    
-    # Get current conditions
+# Endpoint 1: API endpoint that returns JSON data
+# Corresponds to /api/weather in your OpenAPI spec
+get "/api/weather" do
+  city = params['city'] || "Copenhagen"
+  weather_data = get_weather_data(city)
+
+  if weather_data
+    # According to your spec, the response should be an object with a "data" key
+    json(data: weather_data)
+  else
+    status 500
+    json(error: "Could not fetch weather data")
+  end
+end
+
+# Endpoint 2: User-facing page that renders an HTML forecast
+# Corresponds to /weather in your OpenAPI spec
+get "/weather" do
+  @city = params['city'] || "Copenhagen"
+  weather_data = get_weather_data(@city)
+
+  if weather_data
     @current_condition = weather_data["current_condition"][0]
-    
-    # Get the 3-day forecast
     @forecast = weather_data["weather"]
-
-    # Render the ERB view instead of a string
     erb :weather
   else
     "Sorry, could not fetch the weather."
   end
 end
+
 
 # ----------------------------
 # Security Functions

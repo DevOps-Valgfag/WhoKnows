@@ -1,0 +1,15 @@
+<form action="/api/search" method="get">
+  <input id="search-input" name="q" placeholder="Search..." value="<%= params['q'] %>"/>
+  <button id="search-button" type="submit">Search</button>
+</form>
+
+<div id="results">
+  <% if @search_results %>
+    <% @search_results.each do |result| %>
+      <div>
+        <h2><a class="search-result-title" href="<%= result['url'] %>"><%= result['title'] %></a></h2>
+        <p class="search-result-description"><%= result['description'] %></p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

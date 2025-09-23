@@ -1,0 +1,71 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    base64 (0.3.0)
+    bcrypt (3.1.20)
+    bigdecimal (3.2.3)
+    csv (3.3.5)
+    dotenv (3.1.8)
+    httparty (0.23.1)
+      csv
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
+    mini_mime (1.1.5)
+    mini_portile2 (2.8.9)
+    multi_json (1.17.0)
+    multi_xml (0.7.2)
+      bigdecimal (~> 3.1)
+    mustermann (3.0.4)
+      ruby2_keywords (~> 0.0.1)
+    nio4r (2.7.4)
+    puma (6.6.1)
+      nio4r (~> 2.0)
+    rack (2.2.17)
+    rack-protection (3.2.0)
+      base64 (>= 0.1.0)
+      rack (~> 2.2, >= 2.2.4)
+    ruby2_keywords (0.0.5)
+    sinatra (3.2.0)
+      mustermann (~> 3.0)
+      rack (~> 2.2, >= 2.2.4)
+      rack-protection (= 3.2.0)
+      tilt (~> 2.0)
+    sinatra-contrib (3.2.0)
+      multi_json (>= 0.0.2)
+      mustermann (~> 3.0)
+      rack-protection (= 3.2.0)
+      sinatra (= 3.2.0)
+      tilt (~> 2.0)
+    sinatra-flash (0.3.0)
+      sinatra (>= 1.0.0)
+    sqlite3 (1.7.3)
+      mini_portile2 (~> 2.8.0)
+    sqlite3 (1.7.3-aarch64-linux)
+    sqlite3 (1.7.3-arm-linux)
+    sqlite3 (1.7.3-arm64-darwin)
+    sqlite3 (1.7.3-x86-linux)
+    sqlite3 (1.7.3-x86_64-darwin)
+    sqlite3 (1.7.3-x86_64-linux)
+    tilt (2.6.1)
+
+PLATFORMS
+  aarch64-linux
+  arm-linux
+  arm64-darwin
+  x64-mingw-ucrt
+  x86-linux
+  x86_64-darwin
+  x86_64-linux
+
+DEPENDENCIES
+  bcrypt (~> 3.1)
+  dotenv (~> 3.1)
+  httparty
+  puma (~> 6.0)
+  sinatra (~> 3.2)
+  sinatra-contrib (~> 3.2)
+  sinatra-flash (~> 0.3.0)
+  sqlite3 (~> 1.7)
+
+BUNDLED WITH
+   2.7.2

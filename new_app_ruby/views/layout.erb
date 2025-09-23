@@ -1,0 +1,29 @@
+<!doctype html>
+<title>WeKnow</title>
+<link rel="stylesheet" type="text/css" href="/static/style.css">
+<div class="page">
+  <div class="navigation">
+    <nav>
+      <h1><a id="nav-logo" href="/">WeKnow</a></h1>
+
+      <% if session[:user_id] %>
+        <a id="nav-logout" href="/api/logout">Log out</a>
+      <% else %>
+        <a id="nav-login" href="/login">Log in</a>
+        <a id="nav-register" href="/register">Register</a>
+      <% end %>
+    </nav>
+  </div>
+  <% if flash[:error] %>
+    <ul class="flashes">
+      <li><%= flash[:error] %></li>
+    </ul>
+  <% end %>
+  <div class="body">
+    <%= yield %>
+  </div>
+  <div class="footer">
+    <span>WeKnow &copy; 2025</span>
+    <a href="/about">About</a>
+  </div>
+</div>

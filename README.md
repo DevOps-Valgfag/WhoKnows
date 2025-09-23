@@ -1,14 +1,27 @@
+# WhoKnows Application
+
+## Project Overview
+
+WhoKnows is a Ruby/Sinatra-based web application that provides various features, including user authentication, search functionality, and weather data retrieval. The application is designed to be lightweight, easy to set up, and extensible.
+
+---
 
 ## Folder Structure
 
+A brief overview of the key directories and files in the project.
+
+```
 ├── new_app_ruby/       # Main application folder
 │   ├── app.rb          # Main Sinatra application file
 │   ├── views/          # HTML templates for rendering
 │   ├── public/         # Static assets (CSS, JS, images)
 │   ├── db/             # Database-related files
 │   └── .env            # Environment variables
-├── [README.md](http://_vscodecontentref_/1)           # Project documentation
+├── README.md           # Project documentation
 └── open_api.yaml       # OpenAPI specification
+```
+
+---
 
 ## Setting Up the Project Locally
 
@@ -148,7 +161,10 @@ Below is a quick overview of the available API endpoints in the application. For
 
 For more details, visit the [Swagger UI](http://localhost:8080/docs).
 
+## Known Issues
 
+-   The `/api/weather` endpoint is dependent on an external weather service and may fail if the service is unavailable.
+-   The database file must be manually downloaded and placed in the correct directory.
 
 
 

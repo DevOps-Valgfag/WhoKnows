@@ -14,7 +14,8 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.0 # Specify your desired Ruby version
+          # Change this line to a more specific, compatible version
+          ruby-version: '3.4.5'
 
        # Step 3: Run the linter within the correct directory
       - name: Run Standard Ruby Linter

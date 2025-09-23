@@ -1,11 +1,85 @@
-## During development
+## Setting Up the Project Locally
 
-Make ruby ​​generate a secure key with the command: ruby ​​-rsecurerandom -e 'puts SecureRandom.hex(64)'
-Create an .env file in your project, where the key is stored under SESSION_SECRET=and-so-your-very-long-key
+To get the project up and running on your local machine, please follow these steps.
 
-Something has been added to Gemfile, so I also think you should run bundle install
+### Prerequisites
+
+Before you begin, ensure you have the following software installed on your system.
+
+1.  **Ruby:** This project requires Ruby. Version 3.0 or higher is recommended. To check your Ruby version, run the following command in your terminal:
+    ```sh
+    ruby -v
+    ```
+    If you don't have Ruby installed, you can download it from the official [Ruby website](https://www.ruby-lang.org/).
+
+2.  **Bundler:** Bundler is a package manager for Ruby. To install it, run:
+    ```sh
+    gem install bundler
+    ```
+
+3.  **SQLite3:** This project uses SQLite3 as its database. You can verify if it's installed by running:
+    ```sh
+    sqlite3 --version
+    ```
+    If it's not installed, you can find installation instructions on the [SQLite website](https://www.sqlite.org/).
+### Setup Instructions
+
+1.  **Clone the Repository:**
+    First, clone the project repository to your local machine.
+    ```sh
+    git clone <your-repository-url>
+    cd <project-directory>
+    ```
+
+2.  **Install Dependencies:**
+    Next, install the necessary Ruby gems. To keep the gems local to the project and avoid conflicts with system-wide gems, it is recommended to configure Bundler to install dependencies into the `vendor/bundle` directory.
+
+    Run this command first:
+    ```sh
+    bundle config set --local path 'vendor/bundle'
+    ```
+    Now, install the gems:
+    ```sh
+    bundle install
+    ```
+
+3.  **Download the Database:**
+    This project uses a pre-existing database file. You will need to download the official `whoknows.db` file from the provided external source and place it in the root directory of the project.
+
+4.  **Configure Environment Variables:**
+    The application requires a `SESSION_SECRET` for security. Create a `.env` file in the new_app_ruby folder:
+    ```sh
+    touch .env
+    ```
+    Then, add the following line to the `.env` file:
+    ```env
+    SESSION_SECRET=your_super_secret_key
+    ```
+    You can generate a secure secret key by running the following command in your terminal and copying the output:
+    ```sh
+    ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
+    ```
+
+### Running the Application
+
+Once you have completed the setup steps, you can start the application with the following command:
+
+```sh
+bundle exec ruby app.rb
+```
+
+The application will then be accessible at `http://localhost:8080`.
+
+### Troubleshooting
+
+If you encounter any issues during the setup process, here are a few things to check:
+
+*   **Missing Gems:** If you get an error about a missing gem, double-check that you have run `bundle install` successfully.
+*   **Database Not Found:** Ensure that you have downloaded the `whoknows.db` file and placed it in the correct directory.
+*   **Application Fails to Start:** Verify that your `.env` file is correctly named and that the `SESSION_SECRET` is set.
 
 ---
+
 
 ## Agreed conventions new version of the application - Ruby / Sinatra
 According to https://rubystyle.guide/ 

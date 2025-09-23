@@ -24,3 +24,5 @@ gem "dotenv", "~> 3.1"
 
 
 # YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem
+
+gem 'httparty'

@@ -1,4 +1,3 @@
-# app.rb
 require "sinatra"
 require "sinatra/json"
 require "yaml"
@@ -7,6 +6,7 @@ require "sqlite3"
 require "bcrypt"
 require "sinatra/flash"
 require "dotenv/load"
+require "httparty"
 
 configure do
   enable :sessions
@@ -49,7 +49,7 @@ get "/open_api.json" do
   JSON.pretty_generate(OPENAPI_SPEC)
 end
 
-# Swagger UI
+# Openapi docs with Swagger UI
 get "/docs" do
   <<-HTML
   <!DOCTYPE html>
@@ -84,7 +84,7 @@ end
 # ----------------------------
 
 before do
-  # Global variabel to contain data 
+  # Global variabel to contain data
   env['g'] ||= {}
   env['g']['db'] = connect_db
 
@@ -110,7 +110,7 @@ end
 get "/api/search" do
   q = params["q"]
   language = params["language"] || "en"
-  
+
   db = connect_db
   db.results_as_hash = true
 
@@ -156,13 +156,13 @@ post "/api/login" do
 end
 
 # Register (POST) this endpoint process' data from the register formular
-# updated with bcrypt 
+# updated with bcrypt
 post "/api/register" do
   username = params["username"]
   email = params["email"]
   password = params["password"]
-  password2 = params["password2"] 
- 
+  password2 = params["password2"]
+
   # Validation
   error = nil
   if username.to_s.empty?
@@ -220,7 +220,28 @@ get "/register" do
   erb :register
 end
 
+# New Weather Endpoint (with Forecast)
+get "/weather" do
+  # You can change the city or make it dynamic, e.g., city = params['city']
+  @city = "Copenhagen"
+  url = "https://wttr.in/#{@city}?format=j1"
+  response = HTTParty.get(url)
 
+  if response.code == 200
+    weather_data = JSON.parse(response.body)
+    
+    # Get current conditions
+    @current_condition = weather_data["current_condition"][0]
+    
+    # Get the 3-day forecast
+    @forecast = weather_data["weather"]
+
+    # Render the ERB view instead of a string
+    erb :weather
+  else
+    "Sorry, could not fetch the weather."
+  end
+end
 
 # ----------------------------
 # Security Functions

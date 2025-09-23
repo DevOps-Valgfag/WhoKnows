@@ -1,12 +1,27 @@
-# WhoKnows Application
+# WhoKnows Application 🚀
+
+![Ruby](https://img.shields.io/badge/Ruby-3.0%2B-red?logo=ruby&logoColor=white)
+![Sinatra](https://img.shields.io/badge/Sinatra-2.1%2B-lightgrey?logo=sinatra)
+![SQLite](https://img.shields.io/badge/SQLite3-Required-blue?logo=sqlite)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Project Overview
 
 WhoKnows is a Ruby/Sinatra-based web application that provides various features, including user authentication, search functionality, and weather data retrieval. The application is designed to be lightweight, easy to set up, and extensible.
 
+<p align="center">
+  <img src="https://img.shields.io/badge/ruby-%23CC342D.svg?style=for-the-badge&logo=ruby&logoColor=white" alt="Ruby" />
+  <img src="https://img.shields.io/badge/sinatra-%23000.svg?style=for-the-badge&logo=sinatra&logoColor=white" alt="Sinatra" />
+  <img src="https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/YAML-grey?style=for-the-badge&logo=yaml&logoColor=white" alt="YAML" />
+  <img src="https://img.shields.io/badge/json-5E5C5C?style=for-the-badge&logo=json&logoColor=white" alt="JSON" />
+  <img src="https://img.shields.io/badge/dotenv-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black" alt="Dotenv" />
+  <img src="https://img.shields.io/badge/BCrypt-627E99?style=for-the-badge&logo=lock&logoColor=white" alt="BCrypt" />
+</p>
+
 ---
 
-## Folder Structure
+## 📂 Folder Structure
 
 A brief overview of the key directories and files in the project.
 
@@ -23,11 +38,11 @@ A brief overview of the key directories and files in the project.
 
 ---
 
-## Setting Up the Project Locally
+## 🛠️ Setting Up the Project Locally
 
 To get the project up and running on your local machine, please follow these steps.
 
-### Prerequisites
+### Prerequisites ✅
 
 Before you begin, ensure you have the following software installed on your system.
 
@@ -47,7 +62,7 @@ Before you begin, ensure you have the following software installed on your syste
     sqlite3 --version
     ```
     If it's not installed, you can find installation instructions on the [SQLite website](https://www.sqlite.org/).
-### Setup Instructions
+### 🚀 Setup Instructions
 
 1.  **Clone the Repository:**
     First, clone the project repository to your local machine.
@@ -118,7 +133,7 @@ Below is a quick overview of the available API endpoints in the application. For
 
 ---
 
-### Authentication Endpoints
+### Authentication Endpoints 🔒
 
 | Method | Endpoint         | Description                          |
 |--------|-------------------|--------------------------------------|
@@ -128,7 +143,7 @@ Below is a quick overview of the available API endpoints in the application. For
 
 ---
 
-### Search Endpoint
+### Search Endpoint 🔍
 
 | Method | Endpoint         | Description                          |
 |--------|-------------------|--------------------------------------|
@@ -136,7 +151,7 @@ Below is a quick overview of the available API endpoints in the application. For
 
 ---
 
-### Weather Endpoints
+### Weather Endpoints 🌦️
 
 | Method | Endpoint         | Description                          |
 |--------|-------------------|--------------------------------------|
@@ -145,7 +160,7 @@ Below is a quick overview of the available API endpoints in the application. For
 
 ---
 
-### OpenAPI Specification Endpoints
+### OpenAPI Specification Endpoints 📜
 
 | Method | Endpoint         | Description                          |
 |--------|-------------------|--------------------------------------|
@@ -161,7 +176,7 @@ Below is a quick overview of the available API endpoints in the application. For
 
 For more details, visit the [Swagger UI](http://localhost:8080/docs).
 
-## Known Issues
+🐛 Known Issues
 
 -   The `/api/weather` endpoint is dependent on an external weather service and may fail if the service is unavailable.
 -   The database file must be manually downloaded and placed in the correct directory.

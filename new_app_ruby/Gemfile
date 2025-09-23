@@ -19,4 +19,7 @@ gem "sqlite3", "~> 1.7"
 # Password hashing
 gem "bcrypt", "~> 3.1"
 
+gem 'rubocop', '~> 1.66', require: false
+
+
 # YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem

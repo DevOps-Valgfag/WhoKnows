@@ -1,4 +1,3 @@
-# app.rb
 require "sinatra"
 require "sinatra/json"
 require "yaml"
@@ -7,6 +6,7 @@ require "sqlite3"
 require "bcrypt"
 require "sinatra/flash"
 require "dotenv/load"
+require "httparty" # Gem for making HTTP requests
 
 configure do
   enable :sessions
@@ -49,7 +49,7 @@ get "/open_api.json" do
   JSON.pretty_generate(OPENAPI_SPEC)
 end
 
-# Swagger UI
+# Openapi docs with Swagger UI
 get "/docs" do
   <<-HTML
   <!DOCTYPE html>
@@ -84,7 +84,7 @@ end
 # ----------------------------
 
 before do
-  # Global variabel to contain data 
+  # Global variabel to contain data
   env['g'] ||= {}
   env['g']['db'] = connect_db
 
@@ -110,7 +110,7 @@ end
 get "/api/search" do
   q = params["q"]
   language = params["language"] || "en"
-  
+
   db = connect_db
   db.results_as_hash = true
 
@@ -156,13 +156,13 @@ post "/api/login" do
 end
 
 # Register (POST) this endpoint process' data from the register formular
-# updated with bcrypt 
+# updated with bcrypt
 post "/api/register" do
   username = params["username"]
   email = params["email"]
   password = params["password"]
-  password2 = params["password2"] 
- 
+  password2 = params["password2"]
+
   # Validation
   error = nil
   if username.to_s.empty?
@@ -220,6 +220,47 @@ get "/register" do
   erb :register
 end
 
+# ----------------------------
+# NEW: Weather Endpoints
+# ----------------------------
+
+# Helper method to fetch weather data from the external service
+def get_weather_data(city)
+  url = "https://wttr.in/#{city}?format=j1"
+  response = HTTParty.get(url)
+  return nil unless response.code == 200
+  JSON.parse(response.body)
+end
+
+# Endpoint 1: API endpoint that returns JSON data
+# Corresponds to /api/weather in your OpenAPI spec
+get "/api/weather" do
+  city = params['city'] || "Copenhagen"
+  weather_data = get_weather_data(city)
+
+  if weather_data
+    # According to your spec, the response should be an object with a "data" key
+    json(data: weather_data)
+  else
+    status 500
+    json(error: "Could not fetch weather data")
+  end
+end
+
+# Endpoint 2: User-facing page that renders an HTML forecast
+# Corresponds to /weather in your OpenAPI spec
+get "/weather" do
+  @city = params['city'] || "Copenhagen"
+  weather_data = get_weather_data(@city)
+
+  if weather_data
+    @current_condition = weather_data["current_condition"][0]
+    @forecast = weather_data["weather"]
+    erb :weather
+  else
+    "Sorry, could not fetch the weather."
+  end
+end
 
 
 # ----------------------------

@@ -16,9 +16,9 @@ jobs:
         with:
           ruby-version: 3.0 # Specify your desired Ruby version
 
-      # Step 3: Run the linter within the correct directory
+       # Step 3: Run the linter within the correct directory
       - name: Run Standard Ruby Linter
         uses: standardrb/standard-ruby-action@v1
         with:
-          # Add the following line:
-          working-directory: ./new_app_ruby
+          # Change this line:
+          workdir: ./new_app_ruby

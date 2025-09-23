@@ -1,13 +1,16 @@
+name: Linter
+
+on: [push, pull_request]
+
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2 # or your preferred version
-      - name: Install dependencies
-        run: bundle install
-      - name: Run Standard Ruby
-        run: bundle exec standardrb --fix --format github --format "Standard::Formatter"
+          ruby-version: 3.0 # Specify your desired Ruby version
+      - name: Run Standard Ruby Linter
+        uses: standardrb/standard-ruby-action@v1

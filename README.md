@@ -1,8 +1,9 @@
-# WhoKnows has New owners Now WeKnows is the new!
+## During development
 
-## Dependency Graph:
-First edition, headlines only
-### https://is.gd/VIYoWi
+Make ruby ​​generate a secure key with the command: ruby ​​-rsecurerandom -e 'puts SecureRandom.hex(64)'
+Create an .env file in your project, where the key is stored under SESSION_SECRET=and-so-your-very-long-key
+
+Something has been added to Gemfile, so I also think you should run bundle install
 
 ---
 

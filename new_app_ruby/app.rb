@@ -6,10 +6,11 @@ require "json"
 require "sqlite3"
 require "bcrypt"
 require "sinatra/flash"
+require "dotenv/load"
 
 configure do
   enable :sessions
-  set :session_secret, "dette_er_ikke_god_maade_at_bruge_secretkey_så_den_skal_aendres_til_en_meget_lang_og_tilfældig_streng_der_er_over_64_bytes_lang" # TODO lav min 64 tegn lang nøgle og gem som miljøvar
+  set :session_secret, ENV.fetch("SESSION_SECRET")
   register Sinatra::Flash
 end
 
@@ -144,9 +145,9 @@ post "/api/login" do
   else
     # Hvis login er succesfuldt
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
-    json(message: "You were logged in", user_id: user['id'])
+    #json(message: "You were logged in", user_id: user['id'])
 
-    redirect '/api/search'
+    redirect '/api/search?q='
   end
 
   if error

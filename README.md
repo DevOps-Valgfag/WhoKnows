@@ -79,6 +79,65 @@ If you encounter any issues during the setup process, here are a few things to c
 *   **Application Fails to Start:** Verify that your `.env` file is correctly named and that the `SESSION_SECRET` is set.
 
 ---
+## API Endpoints
+
+Below is a quick overview of the available API endpoints in the application. For detailed specifications, refer to the [OpenAPI documentation](http://localhost:8080/docs).
+
+### General Endpoints
+
+| Method | Endpoint         | Description                          |
+|--------|-------------------|--------------------------------------|
+| GET    | `/`              | Root endpoint. Displays a welcome message. |
+| GET    | `/docs`          | Swagger UI for OpenAPI documentation. |
+| GET    | `/about`         | Displays the "About" page.           |
+
+---
+
+### Authentication Endpoints
+
+| Method | Endpoint         | Description                          |
+|--------|-------------------|--------------------------------------|
+| POST   | `/api/login`     | Logs in a user with username and password. |
+| POST   | `/api/register`  | Registers a new user.                |
+| GET    | `/api/logout`    | Logs out the current user.           |
+
+---
+
+### Search Endpoint
+
+| Method | Endpoint         | Description                          |
+|--------|-------------------|--------------------------------------|
+| GET    | `/api/search`    | Searches for pages based on a query and language. |
+
+---
+
+### Weather Endpoints
+
+| Method | Endpoint         | Description                          |
+|--------|-------------------|--------------------------------------|
+| GET    | `/api/weather`   | Returns weather data for a specified city in JSON format. |
+| GET    | `/weather`       | Displays an HTML weather forecast for a specified city. |
+
+---
+
+### OpenAPI Specification Endpoints
+
+| Method | Endpoint         | Description                          |
+|--------|-------------------|--------------------------------------|
+| GET    | `/open_api.yaml` | Returns the OpenAPI specification in YAML format. |
+| GET    | `/open_api.json` | Returns the OpenAPI specification in JSON format. |
+
+---
+
+### Notes
+- **Authentication**: Some endpoints may require the user to be logged in. Ensure you have a valid session.
+- **Environment Variables**: The application uses a `SESSION_SECRET` for session management. Ensure this is configured in your `.env` file.
+- **Database**: The application relies on an external SQLite database file. Ensure the database is downloaded and placed in the correct directory.
+
+For more details, visit the [Swagger UI](http://localhost:8080/docs).
+
+
+
 
 
 ## Agreed conventions new version of the application - Ruby / Sinatra

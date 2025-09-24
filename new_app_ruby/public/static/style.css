@@ -163,6 +163,9 @@ form[action="/api/search"] {
   width: auto; /* Overrides the default 100% width */
   margin-bottom: 0; /* Removes the bottom margin from the generic input style */
   
+  /* Add padding to give text inside the input field space */
+  padding: 0.75rem 1.25rem;
+
   /* Explicitly define the border to override browser defaults */
   border: 1px solid var(--border-color);
   border-right: none;
@@ -213,3 +216,4 @@ form[action="/api/search"] {
   border-radius: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+

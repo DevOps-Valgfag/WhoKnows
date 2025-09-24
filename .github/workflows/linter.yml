@@ -1,15 +1,11 @@
 name: Ruby Linter
 
-# Controls when the action will run.
-# Triggers the workflow on push or pull request events but only for the main and dev branches.
 on:
   push:
-    branches: [ main, dev ]
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  # The "lint" job
   lint:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest

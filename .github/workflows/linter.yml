@@ -7,28 +7,23 @@ on:
 
 jobs:
   lint:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Set a default working directory for all run commands in this job
-    defaults:
-      run:
-        working-directory: ./new_app_ruby
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # 1. Checks-out your repository
       - name: Check out code
         uses: actions/checkout@v4
 
-      # 2. Sets up a Ruby environment
-      - name: Set up Ruby
+      # 2. Sets up Ruby and handles gem installation via bundler-cache
+      - name: Set up Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3' # Or the Ruby version you are using
+          # This is the key: it runs bundle install and correctly configures paths
+          bundler-cache: true
+          working-directory: ./new_app_ruby
 
-      # 3. Install gems and run the linter in a single step
-      - name: Install dependencies and run linter
-        run: |
-          bundle install
-          bundle exec standard
+      # 3. Runs the linter
+      - name: Run StandardRB Linter
+        # We still need to tell this step where to run
+        working-directory: ./new_app_ruby
+        run: bundle exec standard

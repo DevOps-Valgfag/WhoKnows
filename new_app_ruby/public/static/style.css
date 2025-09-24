@@ -179,3 +179,37 @@ form[action="/api/search"] {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
+
+/* 9. Modern About Page Style (CSS-Only) */
+
+/* Target the h1 specifically on a page that starts with it */
+.body > h1:first-child {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Target the paragraph immediately following that h1 */
+.body > h1:first-child + p {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0 auto 3rem auto; /* Center the paragraph block */
+}
+
+/* Target the h2 that follows the mission paragraph */
+.body > h1:first-child + p + h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Target the image that follows the team h2 */
+.body > h1:first-child + p + h2 + img {
+  display: block;
+  margin: 0 auto; /* Center the image */
+  width: 100%;
+  max-width: auto;
+  height: auto; /* Override the inline style */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}

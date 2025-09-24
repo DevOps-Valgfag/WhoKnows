@@ -21,8 +21,10 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3' # Or the Ruby version you are using
-          bundler-cache: true # Automatically runs 'bundle install' and caches gems
+          bundler-cache: true # Automatically runs 'bundle install'
+          working-directory: ./new_app_ruby # <-- ADD THIS: Tell bundler where to find the Gemfile
 
       # 3. Runs the Standard linter
       - name: Run StandardRB Linter
+        working-directory: ./new_app_ruby # <-- ADD THIS: Run the linter in the correct directory
         run: bundle exec standard

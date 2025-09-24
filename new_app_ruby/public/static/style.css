@@ -152,3 +152,30 @@ ul.flashes {
     gap: 1rem;
   }
 }
+
+/* 8. Modern Search Bar Style */
+form[action="/api/search"] {
+  display: flex; /* Aligns the input and button side-by-side */
+}
+
+#search-input {
+  flex-grow: 1; /* Allows the input to fill all available space */
+  width: auto; /* Overrides the default 100% width */
+  margin-bottom: 0; /* Removes the bottom margin from the generic input style */
+  
+  /* Explicitly define the border to override browser defaults */
+  border: 1px solid var(--border-color);
+  border-right: none;
+
+  /* Explicitly set the corner radius */
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#search-button {
+  /* Makes the button join seamlessly with the input */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}

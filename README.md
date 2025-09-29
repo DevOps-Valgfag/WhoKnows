@@ -97,7 +97,7 @@ Before you begin, ensure you have the following software installed on your syste
     ```
     You can generate a secure secret key by running the following command in your terminal and copying the output:
     ```sh
-    ruby -rsecurerandom -e 'puts SecureRandom.hex(64)'
+    ruby -r securerandom -e 'puts SecureRandom.hex(64)'
     ```
 
 ### Running the Application

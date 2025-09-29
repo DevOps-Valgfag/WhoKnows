@@ -231,7 +231,7 @@ CACHE = {
 }
 
 # Helper method to fetch weather data from the external service
-def get_weather_data(city, ttl: 300, stale_until: 3600)
+def get_weather_data(city, ttl: 300, stale_until: 36000)
   now = Time.now
   city_key = city.downcase
 
@@ -330,4 +330,5 @@ end
 # ----------------------------
 # NB: I "classic style" Sinatra behøver du ikke run!,
 # men du kan lade linjen stå, så virker det i modular style.
+
 # run! if __FILE__ == $0

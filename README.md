@@ -212,6 +212,7 @@ Flow and commands in order to avoid irreparable conflicts:
 | git checkout featureBranchName |  |
 | git merge dev | Merge dev into your feature branch and check if it still can compile* |
 | git push -u origin featureBranchName | pusher din rebased branch til remote, klar til PR |
+
 *If there are any conflicts during merge, solve these in the IDE (then save files, run git add <file> + git commit)
 
 Make PR to dev in GitHub UI.

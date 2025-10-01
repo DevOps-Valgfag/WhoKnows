@@ -202,14 +202,17 @@ We will work in feature branches, make PR to Dev branch and when the application
 Flow and commands in order to avoid irreparable conflicts:
 | Command | Desc.  | 
 |-----------------|-------------|
-| git checkout featureBranch |  |
+| git checkout dev |  |
+| git pull | Make sure your local dev is up to date |
+| git checkout -b featureBranchName | Make a new branch from the updated dev  |
 | git add . | |
-| git commit -m "descriptive message" | |
-| git fetch origin | gets all changes from remote, but do not change the local code |
-| git rebase origin/dev | moves/adds local commits to the latest version of dev from remote* |
-| git push -u origin featureBranch | pusher din rebased branch til remote, klar til PR |
-
-*If there are any conflicts during rebase, solve these in the IDE (the save files, run git add <file> + git rebase --continue)
+| git commit -m "descriptive message" | Make regular commits with descriptive messages |
+| git checkout dev |  |
+| git pull | Make sure your local dev is up to date |
+| git checkout featureBranchName |  |
+| git merge dev | Merge dev into your feature branch and check if it still can compile* |
+| git push -u origin featureBranchName | pusher din rebased branch til remote, klar til PR |
+*If there are any conflicts during merge, solve these in the IDE (then save files, run git add <file> + git commit)
 
 Make PR to dev in GitHub UI.
 

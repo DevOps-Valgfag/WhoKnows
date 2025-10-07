@@ -37,4 +37,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: rubocop.sarif
-          token: ${{ secrets.MY_AT }}
+          token: ${{ secrets.MY_PAT }}

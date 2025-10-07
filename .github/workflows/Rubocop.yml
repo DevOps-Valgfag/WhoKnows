@@ -2,7 +2,7 @@ name: Rubocop
 
 on:
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "dev", "linter-feature" ]
   pull_request:
     branches: [ "main" ]
   schedule:

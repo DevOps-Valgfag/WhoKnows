@@ -211,7 +211,7 @@ form[action="/api/search"] {
   display: block;
   margin: 0 auto; /* Center the image */
   width: 100%;
-  max-width: auto;
+  max-width: 500px;
   height: auto; /* Override the inline style */
   border-radius: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);

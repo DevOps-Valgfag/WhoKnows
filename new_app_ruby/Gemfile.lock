@@ -62,6 +62,7 @@ DEPENDENCIES
   dotenv (~> 3.1)
   httparty
   puma (~> 6.0)
+  rack (~> 2.2)
   sinatra (~> 3.2)
   sinatra-contrib (~> 3.2)
   sinatra-flash (~> 0.3.0)

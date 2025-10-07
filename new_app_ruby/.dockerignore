@@ -1,0 +1,6 @@
+vendor/
+tmp/
+log/
+.git/
+whoknows.db
+.env

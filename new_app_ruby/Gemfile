@@ -20,7 +20,8 @@ gem "sqlite3", "~> 1.7"
 gem "bcrypt", "~> 3.1"
 
 group :development, :test do
-  gem 'rubocop', require: false
+  gem 'rubocop', '~> 1.30', require: false
+  gem 'code-scanning-rubocop', '~> 0.4'
 end
 
 # In order to use secrets from .env file
@@ -28,7 +29,5 @@ gem "dotenv", "~> 3.1"
 
 
 # YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem
-
-gem "code-scanning-rubocop", "= 0.3.0"
 
 gem 'httparty'

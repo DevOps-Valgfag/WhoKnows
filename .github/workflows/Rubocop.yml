@@ -1,41 +1,26 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# pulled from repo
-name: "Rubocop"
+name: Rubocop
 
 on:
   push:
-    branches: [ "main", "dev", "linter-feature"]
+    branches: [ "main", "dev" ]
   pull_request:
-    # The branches below must be a subset of the branches above
     branches: [ "main" ]
   schedule:
-    - cron: '18 23 * * 1'
+    - cron: '18 23 * * 1' # hver mandag kl 23:18 UTC
 
 jobs:
   rubocop:
     runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # If running on a self-hosted runner, check it meets the requirements
-      # listed at https://github.com/ruby/setup-ruby#using-self-hosted-runners
       - name: Set up Ruby
-        uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.2.2
-
-      # This step is not necessary if you add the gem to your Gemfile
-      - name: Install Code Scanning integration
-        working-directory: new_app_ruby
-        run: bundle add code-scanning-rubocop --version 0.3.0 --skip-install
+          bundler-cache: true
 
       - name: Install dependencies
         working-directory: new_app_ruby

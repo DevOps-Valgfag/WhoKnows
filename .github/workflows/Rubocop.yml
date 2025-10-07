@@ -46,7 +46,7 @@ jobs:
         run: |
           bundle exec rubocop --require code_scanning \
             --format CodeScanning::SarifFormatter \
-            -o ../rubocop.sarif
+            -o ../rubocop.sarif || true
 
       - name: Upload Sarif output
         uses: github/codeql-action/upload-sarif@v3

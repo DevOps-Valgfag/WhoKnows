@@ -1,81 +1,219 @@
-/* Website Defaults */
+/* 
+  Modern Stylesheet for WeKnow - 2025 
+*/
+
+/* 1. Define a Color Palette and Global Styles */
+:root {
+  --background: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --primary-accent: #4f46e5;
+  --primary-accent-hover: #4338ca;
+  --border-color: #e5e7eb;
+  --error-bg: #fef2f2;
+  --error-text: #991b1b;
+  --error-border: #fecaca;
+}
+
 body {
-    font-family: 'Trebuchet MS', sans-serif;
-    font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 2rem;
+  line-height: 1.6;
 }
 
-div.page div.body {
-    padding: 10px;
+/* 2. Main Page Layout */
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 90vh;
 }
 
-div.page div.footer {
-    background: #eee;
-    color: #888;
-    padding: 5px 10px;
-    font-size: 12px;
+.body {
+  flex-grow: 1; /* Ensures footer stays at the bottom */
 }
 
+/* 3. Navigation and Footer */
+.navigation nav {
+  position: relative; /* Establishes a positioning context for the logo */
+  display: flex;
+  justify-content: flex-end; /* Pushes all links to the right */
+  align-items: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+  gap: 1.5rem; /* Adds space between the right-aligned links */
+}
+
+#nav-logo {
+  position: absolute; /* Takes the logo out of the normal flow */
+  left: 50%; /* Moves the logo's left edge to the center */
+  transform: translateX(-50%); /* Shifts the logo left by half its own width to truly center it */
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-accent);
+  text-decoration: none;
+}
+
+.footer {
+  text-align: center;
+  padding: 2rem 0;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+/* 4. Typography and Links */
+a {
+  color: var(--primary-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1, h2 {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* 5. Forms and Buttons */
+form {
+  margin-bottom: 2rem;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Important for 100% width */
+  margin-bottom: 1rem;
+}
+
+input:focus {
+  outline: 2px solid var(--primary-accent);
+  border-color: transparent;
+}
+
+button, input[type="submit"] {
+  background-color: var(--primary-accent);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover, input[type="submit"]:hover {
+  background-color: var(--primary-accent-hover);
+}
+
+/* 6. Specific Components (Search Results & Errors) */
+#results h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.error, .flashes li {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
 
 ul.flashes {
-    list-style: none;
-    margin: 10px 10px 0 10px;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
-ul.flashes li {
-    background: #B9F3ED;
-    border: 1px solid #81CEC6;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    padding: 4px;
-    font-size: 13px;
+/* 7. Responsive Design for smaller screens */
+@media (max-width: 600px) {
+  body {
+    padding: 1rem;
+  }
+  .navigation nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
 
-div.error {
-    margin: 10px 0;
-    background: #FAE4E4;
-    border: 1px solid #DD6F6F;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    padding: 4px;
-    font-size: 13px;
+/* 8. Modern Search Bar Style */
+form[action="/api/search"] {
+  display: flex; /* Aligns the input and button side-by-side */
 }
 
+#search-input {
+  flex-grow: 1; /* Allows the input to fill all available space */
+  width: auto; /* Overrides the default 100% width */
+  margin-bottom: 0; /* Removes the bottom margin from the generic input style */
+  
+  /* Add padding to give text inside the input field space */
+  padding: 0.75rem 1.25rem;
 
-/* Custom Styles */
-nav {
-    white-space: nowrap;
-    text-align: center;
+  /* Explicitly define the border to override browser defaults */
+  border: 1px solid var(--border-color);
+  border-right: none;
+
+  /* Explicitly set the corner radius */
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
-nav h1, nav a {
-    display: inline-block;
-    margin-right: 20px;
+#search-button {
+  /* Makes the button join seamlessly with the input */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
-#nav-login, #nav-register, #nav-logout {
-    float: right;
+/* 9. Modern About Page Style (CSS-Only) */
+
+/* Target the h1 specifically on a page that starts with it */
+.body > h1:first-child {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
 }
 
-input {
-    width: 85%;
-    padding: 10px;
-    margin: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+/* Target the paragraph immediately following that h1 */
+.body > h1:first-child + p {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0 auto 3rem auto; /* Center the paragraph block */
 }
 
-button {
-    width: 10%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f0f0f0;
-    cursor: pointer;
-    margin-left: 10px;
+/* Target the h2 that follows the mission paragraph */
+.body > h1:first-child + p + h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
-button:active {
-    background-color: #e0e0e0;
-    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+/* Target the image that follows the team h2 */
+.body > h1:first-child + p + h2 + img {
+  display: block;
+  margin: 0 auto; /* Center the image */
+  width: 100%;
+  max-width: auto;
+  height: auto; /* Override the inline style */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+

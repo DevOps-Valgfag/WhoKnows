@@ -52,32 +52,12 @@ end
 
 # Openapi docs with Swagger UI
 get "/docs" do
-  <<-HTML
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>API Docs</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
-  </head>
-  <body>
-    <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
-    <script>
-      window.onload = () => {
-        SwaggerUIBundle({
-          url: '/open_api.yaml',
-          dom_id: '#swagger-ui'
-        });
-      };
-    </script>
-  </body>
-  </html>
-  HTML
+  erb :docs, layout: :layout
 end
 
 # Root endpoint
 get "/" do
-  "Sinatra + OpenAPI demo! Besøg /docs for Swagger UI"
+  redirect '/api/search?q='
 end
 
 # ----------------------------

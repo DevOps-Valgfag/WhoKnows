@@ -34,9 +34,11 @@ jobs:
 
       # This step is not necessary if you add the gem to your Gemfile
       - name: Install Code Scanning integration
+        working-directory: new_app_ruby
         run: bundle add code-scanning-rubocop --version 0.3.0 --skip-install
 
       - name: Install dependencies
+        working-directory: new_app_ruby
         run: bundle install
 
       - name: Rubocop run

@@ -1,4 +1,3 @@
-# app.rb
 require "sinatra"
 require "sinatra/json"
 require "yaml"
@@ -7,6 +6,8 @@ require "sqlite3"
 require "bcrypt"
 require "sinatra/flash"
 require "dotenv/load"
+require "httparty" # Gem for making HTTP requests
+require "time"
 
 configure do
   enable :sessions
@@ -49,7 +50,7 @@ get "/open_api.json" do
   JSON.pretty_generate(OPENAPI_SPEC)
 end
 
-# Swagger UI
+# Openapi docs with Swagger UI
 get "/docs" do
   <<-HTML
   <!DOCTYPE html>
@@ -84,7 +85,7 @@ end
 # ----------------------------
 
 before do
-  # Global variabel to contain data 
+  # Global variabel to contain data
   env['g'] ||= {}
   env['g']['db'] = connect_db
 
@@ -103,14 +104,14 @@ after do
 end
 
 # ----------------------------
-# API Endpoints (skeletons)
+# API Endpoints 
 # ----------------------------
 
 # Search API
 get "/api/search" do
   q = params["q"]
   language = params["language"] || "en"
-  
+
   db = connect_db
   db.results_as_hash = true
 
@@ -156,13 +157,13 @@ post "/api/login" do
 end
 
 # Register (POST) this endpoint process' data from the register formular
-# updated with bcrypt 
+# updated with bcrypt
 post "/api/register" do
   username = params["username"]
   email = params["email"]
   password = params["password"]
-  password2 = params["password2"] 
- 
+  password2 = params["password2"]
+
   # Validation
   error = nil
   if username.to_s.empty?
@@ -191,7 +192,6 @@ post "/api/register" do
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db
-    # Sørg for at din `users` tabel har en kolonne for `password` der er bred nok til en bcrypt hash (typisk VARCHAR(60))
     db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
     db.close
     # Succesfuld registrering, omdiriger til login-siden
@@ -220,6 +220,93 @@ get "/register" do
   erb :register
 end
 
+# ----------------------------
+# NEW: Weather Endpoints
+# ----------------------------
+
+CACHE = {
+  weather: {}, # saves data per city
+  expires_at: {},  # fresh-ttl
+  stale_until: {}  # max expire 
+}
+
+# Helper method to fetch weather data from the external service
+def get_weather_data(city, ttl: 300, stale_until: 36000)
+  now = Time.now
+  city_key = city.downcase
+
+  # tjek om der findes frisk cache data (indenfor ttl) → brug den
+  if CACHE[:weather][city_key] && CACHE[:expires_at][city_key] > now
+    warn "[CACHE HIT] Bruger cached data for #{city}"
+    return { data: CACHE[:weather][city_key], status: :fresh }
+  end
+
+  warn "[CACHE MISS] Henter nyt data for #{city} fra API"
+  url = "https://wttr.in/#{URI.encode_www_form_component(city)}?format=j1"
+  begin
+    response = HTTParty.get(url, timeout: 5)
+    if response.code == 200
+      data = JSON.parse(response.body)
+
+      # Gem i cache med TTL
+      CACHE[:weather][city_key]   = data
+      CACHE[:expires_at][city_key] = now + ttl
+      CACHE[:stale_until][city_key] = now + stale_until
+
+      return { data: data, status: :fresh }
+    else
+      # Fallback if API fails 
+      if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
+        return { data: CACHE[:weather][city_key], status: :stale }
+      else
+        return nil
+      end
+    end
+  rescue StandardError => e
+    warn "[weather] error for #{city}: #{e.class} #{e.message}"
+    if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
+      return { data: CACHE[:weather][city_key], status: :stale }
+    else
+      return nil
+    end
+  end
+end
+
+# Endpoint 1: API endpoint that returns JSON data
+
+get "/api/weather" do
+  city = params['city'] || "Copenhagen"
+  result = get_weather_data(city)
+
+  if result
+    content_type :json
+    json(
+      city: city,
+      cached: result[:cached],
+      data: result[:data]
+    )
+  else
+    status 502
+    json(error: "Couldn't fetch weather data for:  #{city}")
+  end
+end
+
+# Endpoint 2: User-facing page that renders an HTML forecast
+
+get "/weather" do
+  @city = params["city"] || "Copenhagen"
+  result = get_weather_data(@city)
+
+  if result
+    @current_condition = result[:data]["current_condition"][0]
+    @forecast = result[:data]["weather"]
+    @status   = result[:status] # :fresh eller :stale
+    erb :weather
+  else
+    @error = "Kunne ikke hente vejrdata for #{@city}"
+    erb :weather
+  end
+end
 
 
 # ----------------------------
@@ -243,4 +330,5 @@ end
 # ----------------------------
 # NB: I "classic style" Sinatra behøver du ikke run!,
 # men du kan lade linjen stå, så virker det i modular style.
+
 # run! if __FILE__ == $0

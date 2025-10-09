@@ -21,6 +21,30 @@ WhoKnows is a Ruby/Sinatra-based web application that provides various features,
 
 ---
 
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Folder Structure](#-folder-structure)
+- [Setting Up the Project Locally](#️-setting-up-the-project-locally)
+  - [Prerequisites](#prerequisites-)
+  - [Setup Instructions](#-setup-instructions)
+  - [Running the Application](#running-the-application)
+  - [Troubleshooting](#troubleshooting)
+- [API Endpoints](#api-endpoints)
+  - [General Endpoints](#general-endpoints)
+  - [Authentication Endpoints](#authentication-endpoints-)
+  - [Search Endpoint](#search-endpoint-)
+  - [Weather Endpoints](#weather-endpoints-️)
+  - [OpenAPI Specification Endpoints](#openapi-specification-endpoints-)
+- [Agreed conventions new version of the application - Ruby / Sinatra](#agreed-conventions-new-version-of-the-application---ruby--sinatra)
+- [Agreed branching strategy - Git Flow](#agreed-branching-strategy---git-flow)
+- [Running with Docker](#-running-with-docker)
+  - [Prerequisites](#prerequisites--1)
+  - [Running the Application](#running-the-application-1)
+  - [Troubleshooting](#troubleshooting-1)
+
+---
+
 ## 📂 Folder Structure
 
 A brief overview of the key directories and files in the project.

@@ -225,3 +225,35 @@ git checkout dev
 git pull 
 
 Now you can make a new feature branch from the updated dev branch and work on.
+
+---
+
+## 🐳 Running with Docker
+
+This project is fully containerized with Docker. To run the application using Docker, follow these steps.
+
+### Prerequisites ✅
+
+-   **Docker:** Make sure you have Docker and Docker Compose installed on your system. You can download them from the [official Docker website](httpss://docs.docker.com/get-docker/).
+
+### 🚀 Running the Application
+
+1.  **Build and Run the Container:**
+    Navigate to the `new_app_ruby` directory and use Docker Compose to build and run the application in detached mode:
+    ```sh
+    cd new_app_ruby
+    docker-compose up --build -d
+    ```
+
+    The application will be accessible at `http://localhost:8080`.
+
+2.  **Stopping the Application:**
+    To stop the running containers, use the following command:
+    ```sh
+    docker-compose down
+    ```
+
+### Troubleshooting
+
+*   **Port Conflict:** If you get an error that port `8080` is already in use, you can change the port mapping in the `docker-compose.yml` file.
+*   **`.env` file not found:** Make sure the `.env` file is in the `new_app_ruby` directory.

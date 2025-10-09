@@ -9,6 +9,9 @@ services:
       - SESSION_SECRET=${SESSION_SECRET}
     volumes:
       - .:/app
-      - ./whoknows.db:/app/whoknows.db
+      - whoknows_db:/app/db
     env_file:
       - .env
+
+volumes:
+  whoknows_db:

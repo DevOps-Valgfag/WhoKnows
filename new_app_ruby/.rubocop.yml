@@ -1,0 +1,11 @@
+require:
+  - rubocop-rake
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'db/migrate/*'
+    - 'vendor/**/*'
+
+Style/Documentation:
+  Enabled: false

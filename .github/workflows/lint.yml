@@ -1,0 +1,16 @@
+name: Lint
+
+on: [push]
+
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.9' # Make sure this matches your project's Ruby version
+          bundler-cache: true # runs 'bundle install' and caches installed gems
+      - name: Run RuboCop
+        run: bundle exec rubocop

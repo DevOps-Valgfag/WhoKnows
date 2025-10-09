@@ -12,5 +12,7 @@ jobs:
         with:
           ruby-version: '3.3.9' # Make sure this matches your project's Ruby version
           bundler-cache: true # runs 'bundle install' and caches installed gems
+          working-directory: ./new_app_ruby
       - name: Run RuboCop
         run: bundle exec rubocop
+        working-directory: ./new_app_ruby

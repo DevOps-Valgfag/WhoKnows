@@ -1,36 +1,37 @@
+# Docker Compose er som en platform, hvor vi beskriver hvordan vores 
+# services / containere hører sammen og kan styres samlet
 services:
   app:
     container_name: app-whoknows
     image: ghcr.io/devops-valgfag/app-whoknows:latest
-    # Hvis du vil pine til SHA fra workflow, kan du overskrive tag i deploy step
-    restart: unless-stopped
+    restart: unless-stopped         # gør at containeren genstarter, hvis den stopper af sig selv
     
     environment:
       RACK_ENV: production
       SESSION_SECRET: ${SESSION_SECRET}
     volumes:
-      - sqlite_data:/data           # holder whoknows.db via symlink
+      - sqlite_data:/data           # laver volumes (gør SQLite persistent)
     networks:
-      - web
+      - web                         # det interne netværk så de forskellige services kan snakke sammen
     expose:
-      - "8080"                      # intern til nginx
+      - "8080"                      # gør port 8080 tilgængelig internt til nginx
 
   nginx:
-    container_name: whoknows-nginx
-    image: nginx:1.27-alpine
+    container_name: whoknows-nginx  
+    image: nginx:1.27-alpine        # starter Nginx-container som reverse proxy / frontend
     depends_on:
-      - app
+      - app                         # dette sikrer at Ruby-app starter først
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "8081:80"                   # host:container (80 er optaget af din anden app)
+      - "8081:80"                   # gør port 8081 tilgængeligt på VM og Nginx lytter på port 80 
     networks:
       - web
     restart: unless-stopped
 
 volumes:
-  sqlite_data:
+  sqlite_data:                      # fælles ressource: Docker-volume, hvor whoknows.db ligger
 
 networks:
-  web:
+  web:                              # isoleret internt netværk hvor app og Nginx kan kommunikere
     driver: bridge

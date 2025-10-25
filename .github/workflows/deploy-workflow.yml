@@ -2,7 +2,7 @@ name: Build & Deploy (GHCR ➜ Hetzner)
 
 on:
   push:
-    branches: [ mmhDockerCompose ]
+    branches: [ main ]
   workflow_dispatch: {}
 
 env:

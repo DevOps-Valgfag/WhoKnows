@@ -72,6 +72,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: SESSION_SECRET=${{ secrets.SESSION_SECRET }}
           script: |
+            export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
             cd ~/app/whoknows/new_app_ruby
             docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
             docker compose pull

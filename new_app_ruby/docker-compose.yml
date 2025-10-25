@@ -4,11 +4,10 @@ services:
     image: ghcr.io/devops-valgfag/app-whoknows:latest
     # Hvis du vil pine til SHA fra workflow, kan du overskrive tag i deploy step
     restart: unless-stopped
-    env_file:
-      - .env
+    
     environment:
       RACK_ENV: production
-      # SESSION_SECRET kommer fra .env (skrevet af workflow)
+      SESSION_SECRET: ${SESSION_SECRET}
     volumes:
       - sqlite_data:/data           # holder whoknows.db via symlink
     networks:

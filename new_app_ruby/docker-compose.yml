@@ -1,0 +1,37 @@
+services:
+  app:
+    container_name: app-whoknows
+    image: ghcr.io/devops-valgfag/app-whoknows:latest
+    # Hvis du vil pine til SHA fra workflow, kan du overskrive tag i deploy step
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RACK_ENV: production
+      # SESSION_SECRET kommer fra .env (skrevet af workflow)
+    volumes:
+      - sqlite_data:/data           # holder whoknows.db via symlink
+    networks:
+      - web
+    expose:
+      - "8080"                      # intern til nginx
+
+  nginx:
+    container_name: whoknows-nginx
+    image: nginx:1.27-alpine
+    depends_on:
+      - app
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8081:80"                   # host:container (80 er optaget af din anden app)
+    networks:
+      - web
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+
+networks:
+  web:
+    driver: bridge

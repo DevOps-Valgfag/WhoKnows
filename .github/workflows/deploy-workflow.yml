@@ -71,7 +71,7 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/app/whoknows
+            cd ~/app/whoknows/new_app_ruby
             docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
             docker compose pull
             docker compose up -d --remove-orphans

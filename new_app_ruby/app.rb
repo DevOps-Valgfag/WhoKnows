@@ -10,6 +10,7 @@ require "httparty" # Gem for making HTTP requests
 require "time"
 
 configure do
+  set :trust_proxy, true    # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
   enable :sessions
   set :session_secret, ENV.fetch("SESSION_SECRET")
   register Sinatra::Flash

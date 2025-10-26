@@ -2,7 +2,7 @@ name: Build & Deploy (GHCR ➜ Hetzner)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ mmhDockerCompose ]
   workflow_dispatch: {}
 
 env:
@@ -77,4 +77,5 @@ jobs:
             docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
             docker compose pull
             docker compose up -d --remove-orphans
+
             docker compose ps

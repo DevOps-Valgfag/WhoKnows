@@ -226,8 +226,12 @@ end
 # ----------------------------
 
 get "/debug/headers" do
-  headers env.select { |k,v| k.start_with?("HTTP_") }.map { |k,v| "#{k}: #{v}" }.join("<br>")
+  content_type "text/html"
+  env.select { |k, v| k.start_with?("HTTP_") }
+     .map { |k, v| "#{k}: #{v}" }
+     .join("<br>")
 end
+
 
 # ----------------------------
 # NEW: Weather Endpoints

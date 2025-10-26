@@ -222,6 +222,14 @@ get "/register" do
 end
 
 # ----------------------------
+# debug route ifm redirect problemer ved deploy med reverse proxy
+# ----------------------------
+
+get "/debug/headers" do
+  headers env.select { |k,v| k.start_with?("HTTP_") }.map { |k,v| "#{k}: #{v}" }.join("<br>")
+end
+
+# ----------------------------
 # NEW: Weather Endpoints
 # ----------------------------
 

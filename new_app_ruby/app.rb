@@ -148,7 +148,7 @@ post "/api/login" do
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
     #json(message: "You were logged in", user_id: user['id'])
 
-    redirect '/api/search?q='
+    redirect 'api/search?q='
   end
 
   if error
@@ -195,7 +195,7 @@ post "/api/register" do
     db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
     db.close
     # Succesfuld registrering, omdiriger til login-siden
-    redirect '/login'
+    redirect 'login'
   end
 end
 

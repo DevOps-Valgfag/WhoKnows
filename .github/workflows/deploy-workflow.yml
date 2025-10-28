@@ -1,8 +1,8 @@
-name: Build & Deploy (GHCR ➜ Hetzner)
+name: Build & Deploy (GHCR ➜ Azure)
 
 on:
   push:
-    branches: [ main, featureDockerComposeAzure ]
+    branches: [ main ]
   workflow_dispatch: {}
 
 env:

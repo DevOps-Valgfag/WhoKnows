@@ -155,7 +155,10 @@ ul.flashes {
 
 /* 8. Modern Search Bar Style */
 .search-form {
-  display: flex; /* Aligns the input and button side-by-side */
+  display: flex;
+  max-width: 100%;
+  margin: 0 auto 2rem auto;
+  width: 100%; /* Ensure the form takes up the available space */
 }
 
 #search-input {

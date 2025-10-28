@@ -1,17 +1,17 @@
-require "sinatra"
-require "sinatra/json"
-require "yaml"
-require "json"
-require "sqlite3"
-require "bcrypt"
-require "sinatra/flash"
-require "dotenv/load"
-require "httparty" # Gem for making HTTP requests
-require "time"
+require 'sinatra'
+require 'sinatra/json'
+require 'yaml'
+require 'json'
+require 'sqlite3'
+require 'bcrypt'
+require 'sinatra/flash'
+require 'dotenv/load'
+require 'httparty' # Gem for making HTTP requests
+require 'time'
 
 configure do
   enable :sessions
-  set :session_secret, ENV.fetch("SESSION_SECRET")
+  set :session_secret, ENV.fetch('SESSION_SECRET')
   register Sinatra::Flash
 end
 
@@ -19,8 +19,7 @@ end
 # Server konfiguration
 # ----------------------------
 set :port, 8080
-set :bind, "0.0.0.0"
-
+set :bind, '0.0.0.0'
 
 # ----------------------------
 # Database path
@@ -35,23 +34,23 @@ end
 # ----------------------------
 # Load OpenAPI spec
 # ----------------------------
-SPEC_FILE = File.expand_path("open_api.yaml", __dir__)
+SPEC_FILE = File.expand_path('open_api.yaml', __dir__)
 OPENAPI_SPEC = YAML.load_file(SPEC_FILE)
 
 # Serve YAML
-get "/open_api.yaml" do
-  content_type "application/yaml"
+get '/open_api.yaml' do
+  content_type 'application/yaml'
   File.read(SPEC_FILE)
 end
 
 # Serve JSON
-get "/open_api.json" do
+get '/open_api.json' do
   content_type :json
   JSON.pretty_generate(OPENAPI_SPEC)
 end
 
 # Openapi docs with Swagger UI
-get "/docs" do
+get '/docs' do
   <<-HTML
   <!DOCTYPE html>
   <html>
@@ -76,8 +75,8 @@ get "/docs" do
 end
 
 # Root endpoint
-get "/" do
-  "Sinatra + OpenAPI demo! Besøg /docs for Swagger UI"
+get '/' do
+  'Sinatra + OpenAPI demo! Besøg /docs for Swagger UI'
 end
 
 # ----------------------------
@@ -91,7 +90,7 @@ before do
 
   # Handle user-session
   if session[:user_id]
-    user = env['g']['db'].execute("SELECT * FROM users WHERE id = ?", session[:user_id]).first
+    user = env['g']['db'].execute('SELECT * FROM users WHERE id = ?', session[:user_id]).first
     env['g']['user'] = user
   else
     env['g']['user'] = nil
@@ -104,23 +103,23 @@ after do
 end
 
 # ----------------------------
-# API Endpoints 
+# API Endpoints
 # ----------------------------
 
 # Search API
-get "/api/search" do
-  q = params["q"]
-  language = params["language"] || "en"
+get '/api/search' do
+  q = params['q']
+  language = params['language'] || 'en'
 
   db = connect_db
   db.results_as_hash = true
 
   @search_results = if q
-    # This part correctly handles the search query from the form
-    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
-  else
-    []
-  end
+                      # This part correctly handles the search query from the form
+                      db.execute('SELECT * FROM pages WHERE language = ? AND content LIKE ?', [language, "%#{q}%"])
+                    else
+                      []
+                    end
 
   db.close
 
@@ -129,40 +128,38 @@ get "/api/search" do
 end
 
 # Login (POST)
-post "/api/login" do
-  username = params["username"]
-  password = params["password"]
+post '/api/login' do
+  username = params['username']
+  password = params['password']
 
   db = connect_db
   db.results_as_hash = true
-  user = db.execute("SELECT * FROM users WHERE username = ?", username).first
+  user = db.execute('SELECT * FROM users WHERE username = ?', username).first
   db.close
 
   error = nil
   if user.nil?
     error = 'Invalid username'
-  elsif not verify_password(user['password'], password)
+  elsif !verify_password(user['password'], password)
     error = 'Invalid password'
   else
     # Hvis login er succesfuldt
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
-    #json(message: "You were logged in", user_id: user['id'])
+    # json(message: "You were logged in", user_id: user['id'])
 
     redirect '/api/search?q='
   end
 
-  if error
-    json(error: error)
-  end
+  json(error: error) if error
 end
 
 # Register (POST) this endpoint process' data from the register formular
 # updated with bcrypt
-post "/api/register" do
-  username = params["username"]
-  email = params["email"]
-  password = params["password"]
-  password2 = params["password2"]
+post '/api/register' do
+  username = params['username']
+  email = params['email']
+  password = params['password']
+  password2 = params['password2']
 
   # Validation
   error = nil
@@ -177,12 +174,10 @@ post "/api/register" do
   else
     db = connect_db
     # Tjek om brugernavnet allerede er taget
-    user_exists = db.execute("SELECT COUNT(*) FROM users WHERE username = ?", username).first[0] > 0
+    user_exists = db.execute('SELECT COUNT(*) FROM users WHERE username = ?', username).first[0] > 0
     db.close
 
-    if user_exists
-      error = 'The username is already taken'
-    end
+    error = 'The username is already taken' if user_exists
   end
 
   if error
@@ -192,7 +187,7 @@ post "/api/register" do
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db
-    db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
+    db.execute('INSERT INTO users (username, email, password) values (?, ?, ?)', [username, email, hashed_password])
     db.close
     # Succesfuld registrering, omdiriger til login-siden
     redirect '/login'
@@ -200,23 +195,23 @@ post "/api/register" do
 end
 
 # Logout
-get "/api/logout" do
+get '/api/logout' do
   session.clear # removes all session data, also user_id
-  json(message: "You were logged out")
+  json(message: 'You were logged out')
 end
 
 # About page
-get "/about" do
+get '/about' do
   erb :about
 end
 
 # Login page
-get "/login" do
+get '/login' do
   erb :login
 end
 
 # Register page, this one only shows the reg formular
-get "/register" do
+get '/register' do
   erb :register
 end
 
@@ -227,11 +222,11 @@ end
 CACHE = {
   weather: {}, # saves data per city
   expires_at: {},  # fresh-ttl
-  stale_until: {}  # max expire 
+  stale_until: {}  # max expire
 }
 
 # Helper method to fetch weather data from the external service
-def get_weather_data(city, ttl: 300, stale_until: 36000)
+def get_weather_data(city, ttl: 300, stale_until: 36_000)
   now = Time.now
   city_key = city.downcase
 
@@ -249,33 +244,34 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
       data = JSON.parse(response.body)
 
       # Gem i cache med TTL
-      CACHE[:weather][city_key]   = data
+      CACHE[:weather][city_key] = data
       CACHE[:expires_at][city_key] = now + ttl
       CACHE[:stale_until][city_key] = now + stale_until
 
-      return { data: data, status: :fresh }
+      { data: data, status: :fresh }
     else
-      # Fallback if API fails 
+      # Fallback if API fails
       if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
         return { data: CACHE[:weather][city_key], status: :stale }
-      else
-        return nil
       end
+
+      nil
+
     end
   rescue StandardError => e
     warn "[weather] error for #{city}: #{e.class} #{e.message}"
     if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
       return { data: CACHE[:weather][city_key], status: :stale }
-    else
-      return nil
     end
+
+    nil
   end
 end
 
 # Endpoint 1: API endpoint that returns JSON data
 
-get "/api/weather" do
-  city = params['city'] || "Copenhagen"
+get '/api/weather' do
+  city = params['city'] || 'Copenhagen'
   result = get_weather_data(city)
 
   if result
@@ -293,13 +289,13 @@ end
 
 # Endpoint 2: User-facing page that renders an HTML forecast
 
-get "/weather" do
-  @city = params["city"] || "Copenhagen"
+get '/weather' do
+  @city = params['city'] || 'Copenhagen'
   result = get_weather_data(@city)
 
   if result
-    @current_condition = result[:data]["current_condition"][0]
-    @forecast = result[:data]["weather"]
+    @current_condition = result[:data]['current_condition'][0]
+    @forecast = result[:data]['weather']
     @status   = result[:status] # :fresh eller :stale
     erb :weather
   else
@@ -307,7 +303,6 @@ get "/weather" do
     erb :weather
   end
 end
-
 
 # ----------------------------
 # Security Functions
@@ -317,13 +312,11 @@ def hash_password(password)
   BCrypt::Password.create(password)
 end
 
-
 def verify_password(stored_hash, password)
   BCrypt::Password.new(stored_hash) == password
 rescue BCrypt::Errors::InvalidHash
   false # Håndter tilfælde, hvor hashen er ugyldig
 end
-
 
 # ----------------------------
 # Start server

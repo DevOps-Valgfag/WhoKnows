@@ -23,7 +23,6 @@ jobs:
         uses: super-linter/super-linter@v8.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_LANGUAGE_MODE: true   # Fortæller at vi bruger whitelist dvs vi fortæller hvilke linters vi vil bruge og ikke bruge
           VALIDATE_ALL_CODEBASE: false    # Hvis du kun vil scanne ændrede filer
           
           # Aktiverer relevante lintere
@@ -31,7 +30,7 @@ jobs:
           VALIDATE_DOCKERFILE: true
           VALIDATE_MARKDOWN: true     
           VALIDATE_YAML: true    
-          VALIDATE_YAML_PRETTIER: false  # bruger så yamllint i stedet for prettier
+          VALIDATE_YAML_YAMLLINT: true  # bruger så yamllint i stedet for prettier
 
 
            # Sørger for at vi ser de faktiske fejl i loggen

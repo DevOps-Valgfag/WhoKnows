@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Super-Linter Slim
-        uses: super-linter/super-linter/slim@v8.2.1
+        uses: super-linter/super-linter@v8.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Hvis du kun vil scanne ændrede filer

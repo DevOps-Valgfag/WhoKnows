@@ -10,6 +10,7 @@ require "httparty" # Gem for making HTTP requests
 require "time"
 
 configure do
+  set :trust_proxy, true    # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
   enable :sessions
   set :session_secret, ENV.fetch("SESSION_SECRET")
   register Sinatra::Flash
@@ -77,7 +78,23 @@ end
 
 # Root endpoint
 get "/" do
-  "Sinatra + OpenAPI demo! Besøg /docs for Swagger UI"
+  q = params["q"]
+  language = params["language"] || "en"
+
+  db = connect_db
+  db.results_as_hash = true
+
+  @search_results = if q
+    # This part correctly handles the search query from the form
+    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
+  else
+    []
+  end
+
+  db.close
+
+  # This renders the search page with the results
+  erb :search
 end
 
 # ----------------------------
@@ -148,7 +165,7 @@ post "/api/login" do
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
     #json(message: "You were logged in", user_id: user['id'])
 
-    redirect '/api/search?q='
+    redirect 'api/search?q='
   end
 
   if error
@@ -195,7 +212,7 @@ post "/api/register" do
     db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
     db.close
     # Succesfuld registrering, omdiriger til login-siden
-    redirect '/login'
+    redirect 'login'
   end
 end
 
@@ -219,6 +236,18 @@ end
 get "/register" do
   erb :register
 end
+
+# ----------------------------
+# debug route ifm redirect problemer ved deploy med reverse proxy
+# ----------------------------
+
+get "/debug/headers" do
+  content_type "text/html"
+  env.select { |k, v| k.start_with?("HTTP_") }
+     .map { |k, v| "#{k}: #{v}" }
+     .join("<br>")
+end
+
 
 # ----------------------------
 # NEW: Weather Endpoints

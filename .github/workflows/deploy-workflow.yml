@@ -2,7 +2,7 @@ name: Build & Deploy (GHCR ➜ Hetzner)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, featureDockerComposeAzure ]
   workflow_dispatch: {}
 
 env:
@@ -58,18 +58,18 @@ jobs:
       - name: Upload compose & nginx to VM
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USER }}
+          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
           source: "new_app_ruby/docker-compose.yml,new_app_ruby/nginx.conf"
           target: "~/app/whoknows"
 
       - name: Deploy latest image on VM
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.HETZNER_HOST }}
-          username: ${{ secrets.HETZNER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USER }}
+          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
           envs: SESSION_SECRET=${{ secrets.SESSION_SECRET }}
           script: |
             export SESSION_SECRET=${{ secrets.SESSION_SECRET }}

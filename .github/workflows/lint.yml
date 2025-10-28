@@ -31,4 +31,13 @@ jobs:
           VALIDATE_DOCKERFILE: true
           VALIDATE_MARKDOWN: true     
           VALIDATE_YAML: true    
+
+           # Sørger for at vi ser de faktiske fejl i loggen
+          LOG_LEVEL: DEBUG
+          OUTPUT_DETAILS: detailed
+          OUTPUT_FORMAT: tap
+          PRINT_ALPACA: false     # (Skjul ASCII-logo så loggen er ren)
+
+          # Gør at GitHub viser fejl som annotations i UI
+          ANNOTATIONS: true
           

@@ -77,7 +77,23 @@ end
 
 # Root endpoint
 get "/" do
-  "Sinatra + OpenAPI demo! Besøg /docs for Swagger UI"
+  q = params["q"]
+  language = params["language"] || "en"
+
+  db = connect_db
+  db.results_as_hash = true
+
+  @search_results = if q
+    # This part correctly handles the search query from the form
+    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
+  else
+    []
+  end
+
+  db.close
+
+  # This renders the search page with the results
+  erb :search
 end
 
 # ----------------------------

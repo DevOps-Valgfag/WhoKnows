@@ -154,7 +154,7 @@ ul.flashes {
 }
 
 /* 8. Modern Search Bar Style */
-form[action="/api/search"] {
+.search-form {
   display: flex; /* Aligns the input and button side-by-side */
 }
 

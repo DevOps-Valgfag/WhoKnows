@@ -23,8 +23,8 @@ jobs:
         uses: super-linter/super-linter@v8.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Hvis du kun vil scanne ændrede filer
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_LANGUAGE_MODE: true   # Fortæller at vi bruger whitelist dvs vi fortæller hvilke linters vi vil bruge og ikke bruge
+          VALIDATE_ALL_CODEBASE: false    # Hvis du kun vil scanne ændrede filer
           
           # Aktiverer relevante lintere
           VALIDATE_RUBY: true
@@ -39,7 +39,5 @@ jobs:
           OUTPUT_DETAILS: detailed
           OUTPUT_FORMAT: tap
           PRINT_ALPACA: false     # (Skjul ASCII-logo så loggen er ren)
-
-          # Gør at GitHub viser fejl som annotations i UI
-          ANNOTATIONS: true
+          ANNOTATIONS: true     # Gør at GitHub viser fejl som annotations i UI ved PR
           

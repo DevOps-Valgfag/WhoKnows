@@ -10,7 +10,7 @@ services:
       RACK_ENV: production
       SESSION_SECRET: ${SESSION_SECRET}
     volumes:
-      - sqlite_data:/app           # laver volumes (gør SQLite persistent)
+      - sqlite_data:/data          # laver volumes (gør SQLite persistent)
     networks:
       - web                         # det interne netværk så de forskellige services kan snakke sammen
     expose:

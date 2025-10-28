@@ -1,0 +1,34 @@
+name: Lint
+
+on:
+  push
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  lint:
+    name: Run Super-Linter (Slim)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Super-Linter Slim
+        uses: super-linter/super-linter/slim@v8.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Hvis du kun vil scanne ændrede filer
+          VALIDATE_ALL_CODEBASE: false
+          
+          # Aktiverer relevante lintere
+          VALIDATE_RUBY: true
+          VALIDATE_DOCKERFILE: true
+          VALIDATE_MARKDOWN: true     
+          VALIDATE_YAML: true    
+          

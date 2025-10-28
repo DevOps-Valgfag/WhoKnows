@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   lint:
-    name: Run Super-Linter (Slim)
+    name: Run Super-Linter 
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Run Super-Linter Slim
+      - name: Run Super-Linter 
         uses: super-linter/super-linter@v8.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -31,6 +31,8 @@ jobs:
           VALIDATE_DOCKERFILE: true
           VALIDATE_MARKDOWN: true     
           VALIDATE_YAML: true    
+          VALIDATE_YAML_PRETTIER: false  # bruger så yamllint i stedet for prettier
+
 
            # Sørger for at vi ser de faktiske fejl i loggen
           LOG_LEVEL: DEBUG

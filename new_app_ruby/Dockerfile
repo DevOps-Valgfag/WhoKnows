@@ -24,7 +24,7 @@ RUN bundle config set without 'development test' && \
 COPY app.rb ./
 COPY public ./public
 COPY views ./views
-COPY open_api_yml ./
+COPY open_api.yaml ./
 
 
 # Create a writable data dir for sqlite and symlink to /app/whoknows.db

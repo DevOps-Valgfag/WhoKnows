@@ -59,7 +59,7 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.HETZNER_HOST }} >> ~/.ssh/known_hosts
 
@@ -69,7 +69,7 @@ jobs:
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
             new_app_ruby/docker-compose.yml \
             new_app_ruby/nginx.conf \
-            "${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}:/root/whoknows/new_app_ruby/"
+            "${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}:/home/${{ secrets.HETZNER_USER }}/whoknows/new_app_ruby/"
 
       - name: Deploy latest image on VM
         run: |

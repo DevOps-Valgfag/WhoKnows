@@ -2,12 +2,12 @@ name: Build & Deploy (GHCR ➜ Hetzner)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ mmhDockerCompose ]
   workflow_dispatch: {}
 
 env:
-  IMAGE_NAME: ghcr.io/devops-valgfag/app-whoknows
-  CONTAINER_NAME: app-whoknows
+  IMAGE_NAME: ghcr.io/devops-valgfag/whoknows-app
+  CONTAINER_NAME: whoknows-app
   
 
 jobs:

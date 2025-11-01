@@ -2,8 +2,8 @@
 # services / containere hører sammen og kan styres samlet
 services:
   app:
-    container_name: app-whoknows
-    image: ghcr.io/devops-valgfag/app-whoknows:latest
+    container_name: whoknows-app
+    image: ghcr.io/devops-valgfag/whoknows-app:latest
     restart: unless-stopped         # gør at containeren genstarter, hvis den stopper af sig selv
     
     environment:

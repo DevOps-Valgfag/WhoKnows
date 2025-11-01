@@ -69,7 +69,7 @@ jobs:
           scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
             new_app_ruby/docker-compose.yml \
             new_app_ruby/nginx.conf \
-            ${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}:root/whoknows/new_app_ruby/
+            "${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}:/root/whoknows/new_app_ruby/"
 
       - name: Deploy latest image on VM
         run: |

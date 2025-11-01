@@ -54,28 +54,40 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
+        # --- SIKKER SSH OPSÆTNING uden 3.party extensions---
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.AZURE_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Upload compose & nginx to VM
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.AZURE_HOST }}
-          username: ${{ secrets.AZURE_USER }}
-          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
-          source: "new_app_ruby/docker-compose.yml,new_app_ruby/nginx.conf"
-          target: "~/app/whoknows"
+      # --- KOPIÉR FILER TIL SERVER ---
+      - name: Upload docker compose & nginx to VM
+        run: |
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            new_app_ruby/docker-compose.yml \
+            new_app_ruby/nginx.conf \
+            "${{ secrets.AZURE_USER }}@${{ secrets.AZURE_HOST }}:/home/${{ secrets.AZURE_USER }}/app/whoknows/new_app_ruby"
 
       - name: Deploy latest image on VM
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.AZURE_HOST }}
-          username: ${{ secrets.AZURE_USER }}
-          key: ${{ secrets.AZURE_SSH_PRIVATE_KEY }}
-          envs: SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-          script: |
-            export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            cd ~/app/whoknows/new_app_ruby
-            docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
-            docker compose pull
-            docker compose up -d --remove-orphans
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            ${{ secrets.AZURE_USER }}@${{ secrets.AZURE_HOST }} << 'EOF'
+              set -e
+              echo "Logging in to GHCR..."
+              docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
 
-            docker compose ps
+              echo "Cleaning up old containers..."
+              docker compose -f ~/app/whoknows/new_app_ruby/docker-compose.yml down || true
+
+              echo "Updating and restarting container..."
+              cd ~/app/whoknows/new_app_ruby
+              export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+              docker compose pull
+              docker compose up -d --remove-orphans
+
+              echo "Deployment complete! Running containers:"
+              docker compose ps
+          EOF

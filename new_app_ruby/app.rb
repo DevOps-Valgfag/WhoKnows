@@ -109,6 +109,7 @@ before do
   # Global variabel to contain data
   env['g'] ||= {}
   env['g']['db'] = connect_db
+  env['g']['db'].results_as_hash = true  # med denne returnerer SQLite rækker som hashes i stedet for arrays..
 
   # Handle user-session
   if session[:user_id]

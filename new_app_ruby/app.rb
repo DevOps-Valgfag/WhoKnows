@@ -9,6 +9,10 @@ require "dotenv/load"
 require "httparty" # Gem for making HTTP requests
 require "time"
 
+# Mere detaljerede muligheder for debug (både bedre browser og terminal visning)
+set :show_exceptions, true
+set :raise_errors, true
+
 configure do
   set :trust_proxy, true    # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
   enable :sessions
@@ -180,7 +184,11 @@ end
 
 # Register (POST) 
 post "/change_password" do
-  redirect '/login' unless env['g']['user']
+  # Sørg for at brugeren stadig er logget ind
+  unless env['g']['user']
+    flash[:error] = "Session expired. Please log in again."
+    redirect '/login'
+  end
 
   new_pw  = params["new_password"]
   new_pw2 = params["new_password2"]
@@ -189,13 +197,22 @@ post "/change_password" do
     flash[:error] = "Passwords must match and not be empty"
     redirect '/change_password'
   else
-    db = connect_db
-    hashed = BCrypt::Password.create(new_pw)
-    db.execute("UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?", [hashed, env['g']['user']['id']])
-    db.close
+    begin
+      db = connect_db
+      hashed = BCrypt::Password.create(new_pw)
+      db.execute(
+        "UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?",
+        [hashed, env['g']['user']['id']]
+      )
+      db.close
 
-    flash[:success] = "Password updated successfully!"
-    redirect '/api/search?q='
+      flash[:success] = "Password updated successfully!"
+      redirect '/api/search?q='
+    rescue => e
+      warn "[change_password] ERROR: #{e.class} - #{e.message}"
+      flash[:error] = "An unexpected error occurred: #{e.message}"
+      redirect '/change_password'
+    end
   end
 end
 

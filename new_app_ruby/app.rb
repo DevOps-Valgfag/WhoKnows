@@ -10,8 +10,8 @@ require "httparty" # Gem for making HTTP requests
 require "time"
 
 # Mere detaljerede muligheder for debug (både bedre browser og terminal visning)
-set :show_exceptions, true
-set :raise_errors, true
+# set :show_exceptions, true
+# set :raise_errors, true
 
 configure do
   set :trust_proxy, true    # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
@@ -263,7 +263,8 @@ end
 # Logout
 get "/api/logout" do
   session.clear # removes all session data, also user_id
-  json(message: "You were logged out")
+  flash[:info] = "Thank you for this time. Log in again to continue searching and get the most out of your search."
+  redirect '/login'
 end
 
 # About page

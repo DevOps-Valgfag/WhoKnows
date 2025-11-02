@@ -9,6 +9,10 @@ require "dotenv/load"
 require "httparty" # Gem for making HTTP requests
 require "time"
 
+# Mere detaljerede muligheder for debug (både bedre browser og terminal visning)
+# set :show_exceptions, true
+# set :raise_errors, true
+
 configure do
   set :trust_proxy, true    # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
   enable :sessions
@@ -105,6 +109,7 @@ before do
   # Global variabel to contain data
   env['g'] ||= {}
   env['g']['db'] = connect_db
+  env['g']['db'].results_as_hash = true  # med denne returnerer SQLite rækker som hashes i stedet for arrays..
 
   # Handle user-session
   if session[:user_id]
@@ -158,18 +163,57 @@ post "/api/login" do
   error = nil
   if user.nil?
     error = 'Invalid username'
-  elsif not verify_password(user['password'], password)
+  elsif !verify_password(user['password'], password)
     error = 'Invalid password'
   else
     # Hvis login er succesfuldt
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
-    #json(message: "You were logged in", user_id: user['id'])
 
-    redirect 'api/search?q='
+    # Brugeren bliver prompted for at ændre password ved første login efter breach
+    if user['must_change_password'].to_i == 1
+      redirect '/change_password'
+    else
+      redirect 'api/search?q='
+    end
   end
 
   if error
-    json(error: error)
+    @error = error
+    erb :login
+  end
+end
+
+# Register (POST) 
+post "/change_password" do
+  # Sørg for at brugeren stadig er logget ind
+  unless env['g']['user']
+    flash[:error] = "Session expired. Please log in again."
+    redirect '/login'
+  end
+
+  new_pw  = params["new_password"]
+  new_pw2 = params["new_password2"]
+
+  if new_pw.to_s.empty? || new_pw != new_pw2
+    flash[:error] = "Passwords must match and not be empty"
+    redirect '/change_password'
+  else
+    begin
+      db = connect_db
+      hashed = BCrypt::Password.create(new_pw)
+      db.execute(
+        "UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?",
+        [hashed, env['g']['user']['id']]
+      )
+      db.close
+
+      flash[:success] = "Password updated successfully!"
+      redirect '/api/search?q='
+    rescue => e
+      warn "[change_password] ERROR: #{e.class} - #{e.message}"
+      flash[:error] = "An unexpected error occurred: #{e.message}"
+      redirect '/change_password'
+    end
   end
 end
 
@@ -209,7 +253,7 @@ post "/api/register" do
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db
-    db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
+    db.execute("INSERT INTO users (username, email, password, must_change_password) values (?, ?, ?, 0)", [username, email, hashed_password])
     db.close
     # Succesfuld registrering, omdiriger til login-siden
     redirect 'login'
@@ -219,7 +263,8 @@ end
 # Logout
 get "/api/logout" do
   session.clear # removes all session data, also user_id
-  json(message: "You were logged out")
+  flash[:info] = "Thank you for now. Log in again to continue searching and get the most out of the application."
+  redirect '/login'
 end
 
 # About page
@@ -230,6 +275,11 @@ end
 # Login page
 get "/login" do
   erb :login
+end
+
+get "/change_password" do
+  redirect '/login' unless env['g']['user'] # skal være logget ind
+  erb :change_password
 end
 
 # Register page, this one only shows the reg formular

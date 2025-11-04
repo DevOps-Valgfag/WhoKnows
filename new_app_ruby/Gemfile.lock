@@ -93,7 +93,7 @@ GEM
       tilt (~> 2.0)
     sinatra-flash (0.3.0)
       sinatra (>= 1.0.0)
-    sqlite3 (1.6.9)
+    sqlite3 (1.7.3)
       mini_portile2 (~> 2.8.0)
     tilt (2.6.1)
     websocket (1.2.11)
@@ -120,7 +120,7 @@ DEPENDENCIES
   sinatra (~> 3.2)
   sinatra-contrib (~> 3.2)
   sinatra-flash (~> 0.3.0)
-  sqlite3 (= 1.6.9)
+  sqlite3 (~> 1.7)
 
 BUNDLED WITH
    2.7.2

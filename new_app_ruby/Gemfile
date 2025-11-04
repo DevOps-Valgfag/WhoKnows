@@ -14,7 +14,7 @@ gem "sinatra-flash", "~> 0.3.0"
 gem "puma", "~> 6.0"
 
 # Database
-gem "sqlite3", "1.6.9"
+gem "sqlite3", "~> 1.7"
 
 # Password hashing
 gem "bcrypt", "~> 3.1"

@@ -3,6 +3,7 @@ ENV['RACK_ENV'] = 'test'
 require 'capybara/rspec'
 require 'rspec'
 require_relative '../app'
+require_relative 'support/database_helper'
 
 Capybara.app = Sinatra::Application
 
@@ -18,4 +19,14 @@ RSpec.configure do |config|
   end
 
   config.shared_context_metadata_behavior = :apply_to_host_groups
+  
+  # Set up test database before all tests
+  config.before(:suite) do
+    DatabaseHelper.setup_test_database
+  end
+  
+  # Clean up test database after all tests
+  config.after(:suite) do
+    DatabaseHelper.cleanup_test_database
+  end
 end

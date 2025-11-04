@@ -181,6 +181,13 @@ For more details, visit the [Swagger UI](http://localhost:8080/docs).
 -   The `/api/weather` endpoint is dependent on an external weather service and may fail if the service is unavailable.
 -   The database file must be manually downloaded and placed in the correct directory.
 
+---
+## End-to-End (E2E) Testing
+
+For details on our end-to-end testing strategy and scenarios, please see the [E2E Testing Documentation](E2E.md).
+
+
+
 
 
 ## Agreed conventions new version of the application - Ruby / Sinatra

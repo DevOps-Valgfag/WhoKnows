@@ -14,7 +14,7 @@ gem "sinatra-flash", "~> 0.3.0"
 gem "puma", "~> 6.0"
 
 # Database
-gem "sqlite3", "~> 1.7"
+gem "sqlite3", "1.6.9"
 
 # Password hashing
 gem "bcrypt", "~> 3.1"
@@ -26,3 +26,10 @@ gem "dotenv", "~> 3.1"
 # YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem
 
 gem 'httparty'
+
+
+group :test do
+  gem 'rspec'
+  gem 'capybara'
+  gem 'selenium-webdriver'
+end

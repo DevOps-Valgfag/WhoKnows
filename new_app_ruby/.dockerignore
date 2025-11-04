@@ -30,3 +30,6 @@ whoknows.db
 # Node artifacts if any front-end builds are present
 node_modules
 dist
+
+docker-compose.yml
+nginx.conf

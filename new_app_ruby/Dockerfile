@@ -20,8 +20,11 @@ COPY Gemfile Gemfile.lock* ./
 RUN bundle config set without 'development test' && \
     bundle install --jobs 4 --retry 3
 
-# Copy app code
-COPY . .
+# Copy app code, denne ændres til mere specifik, så ikke docker-compose.yml og nginx.conf filerne også medtages i image
+COPY app.rb ./
+COPY public ./public
+COPY views ./views
+COPY open_api.yaml ./
 
 # Create a writable data dir for sqlite and symlink to /app/whoknows.db
 # (Your code expects DB_PATH at /app/whoknows.db; we persist it under /data)

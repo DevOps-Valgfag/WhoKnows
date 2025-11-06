@@ -220,6 +220,7 @@ end
 # Register (POST) this endpoint process' data from the register formular
 # updated with bcrypt
 post "/api/register" do
+  # The endpoint now primarily handles form data, which is common for registration.
   username = params["username"]
   email = params["email"]
   password = params["password"]
@@ -237,19 +238,21 @@ post "/api/register" do
     error = 'The two passwords do not match'
   else
     db = connect_db
-    # Tjek om brugernavnet allerede er taget
+    # Tjek om brugernavnet eller email allerede er taget
     user_exists = db.execute("SELECT COUNT(*) FROM users WHERE username = ?", username).first[0] > 0
+    email_exists = db.execute("SELECT COUNT(*) FROM users WHERE email = ?", email).first[0] > 0
     db.close
 
     if user_exists
       error = 'The username is already taken'
+    elsif email_exists
+      error = 'The email is already registered'
     end
   end
 
   if error
-    # Hvis der er en fejl, viser vi registreringssiden igen med en fejlbesked
-    @error = error
-    erb :register
+    flash[:error] = error
+    redirect '/register'
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db

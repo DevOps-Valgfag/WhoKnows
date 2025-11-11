@@ -51,7 +51,7 @@ jobs:
       # 7. Kør smoketests mod localhost
       - name: Run Postman smoketests
         run: |
-          postman collection run "48172914-3de719aa-9ddd-4bb8-98af-e3ad54907231" \
+          postman collection run "41748160-a6d7dfee-dc2a-4d14-84d5-fadf82b490a1" \
             --env-var baseUrl="http://localhost:8080" \
             --bail \
             --reporters cli,junit \

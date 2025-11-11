@@ -220,11 +220,33 @@ end
 # Register (POST) this endpoint process' data from the register formular
 # updated with bcrypt
 post "/api/register" do
-  # The endpoint now primarily handles form data, which is common for registration.
-  username = params["username"]
-  email = params["email"]
-  password = params["password"]
+  # --- Tillad både form-data og JSON body ---
+  request.body.rewind
+  raw_body = request.body.read
+
+  content_type_hdr = request.media_type || request.content_type # begge virker i Sinatra
+  is_json_ct = content_type_hdr && content_type_hdr.downcase.include?("application/json")
+
+  first_char = raw_body.lstrip[0]
+  looks_like_json = !raw_body.to_s.strip.empty? && ['{', '['].include?(first_char)
+
+  if (is_json_ct || looks_like_json) && !raw_body.to_s.strip.empty?
+    begin
+      data = JSON.parse(raw_body)
+      params.merge!(data) # flet ind i params så resten fungerer som før
+      warn "[REGISTER] Parsed JSON body: #{data.inspect}"
+    rescue JSON::ParserError
+      halt 400, "Invalid JSON payload"
+    end
+  end
+
+  # --- Herefter fungerer resten som før ---
+  username  = params["username"]
+  email     = params["email"]
+  password  = params["password"]
   password2 = params["password2"]
+
+  warn "[REGISTER] Incoming params: #{params.inspect}"
 
   # Validation
   error = nil
@@ -238,8 +260,7 @@ post "/api/register" do
     error = 'The two passwords do not match'
   else
     db = connect_db
-    # Tjek om brugernavnet eller email allerede er taget
-    user_exists = db.execute("SELECT COUNT(*) FROM users WHERE username = ?", username).first[0] > 0
+    user_exists  = db.execute("SELECT COUNT(*) FROM users WHERE username = ?", username).first[0] > 0
     email_exists = db.execute("SELECT COUNT(*) FROM users WHERE email = ?", email).first[0] > 0
     db.close
 
@@ -251,17 +272,33 @@ post "/api/register" do
   end
 
   if error
-    flash[:error] = error
-    redirect '/register'
+    if is_json_ct
+      # --- JSON: send klar fejlrespons ---
+      status 409 # Conflict
+      content_type :json
+      return json(success: false, error: error)
+    else
+      # --- Form: vis flash og redirect ---
+      flash[:error] = error
+      redirect '/register'
+    end
   else
-    hashed_password = BCrypt::Password.create(password)
-    db = connect_db
-    db.execute("INSERT INTO users (username, email, password, must_change_password) values (?, ?, ?, ?)", [username, email, hashed_password, 0])
-    new_user_id = db.last_insert_row_id
-    db.close
-    # Succesfuld registrering, log ind og omdiriger
-    session[:user_id] = new_user_id
-    redirect '/'
+    begin
+      hashed_password = BCrypt::Password.create(password)
+      db = connect_db
+      db.execute("INSERT INTO users (username, email, password, must_change_password)
+                  VALUES (?, ?, ?, ?)", [username, email, hashed_password, 0])
+      new_user_id = db.last_insert_row_id
+      db.close
+
+      session[:user_id] = new_user_id
+      warn "[REGISTER] Created user #{username} (ID=#{new_user_id})"
+      redirect '/'
+    rescue => e
+      warn "[REGISTER] ERROR: #{e.class} - #{e.message}"
+      flash[:error] = "Could not register user: #{e.message}"
+      redirect '/register'
+    end
   end
 end
 

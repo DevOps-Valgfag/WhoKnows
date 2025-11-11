@@ -16,7 +16,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: List repo structure
-        run: ls -R
+        run: |
+          pwd
+          ls -al
+          echo "--- new_app_ruby ---"
+          ls -al new_app_ruby
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1

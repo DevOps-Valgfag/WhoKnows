@@ -220,33 +220,11 @@ end
 # Register (POST) this endpoint process' data from the register formular
 # updated with bcrypt
 post "/api/register" do
-  # Log the raw request body to help with debugging
-  request.body.rewind # Ensure we can read the body multiple times
-  raw_body = request.body.read
-  warn "[REGISTER ATTEMPT] Received raw body: #{raw_body}"
-  warn "[CONTENT-TYPE] Received: #{request.content_type}"
-  request.body.rewind # Rewind again so Sinatra can process it
-
-  is_json = request.content_type&.include?('application/json')
-
-  if is_json
-    begin
-      # Use the already read raw_body to avoid issues with reading the stream twice
-      data = JSON.parse(raw_body)
-      username = data["username"]
-      email = data["email"]
-      password = data["password"]
-      password2 = data["password2"]
-    rescue JSON::ParserError
-      status 400
-      return json(error: "Invalid JSON")
-    end
-  else
-    username = params["username"]
-    email = params["email"]
-    password = params["password"]
-    password2 = params["password2"]
-  end
+  # The endpoint now primarily handles form data, which is common for registration.
+  username = params["username"]
+  email = params["email"]
+  password = params["password"]
+  password2 = params["password2"]
 
   # Validation
   error = nil
@@ -273,15 +251,8 @@ post "/api/register" do
   end
 
   if error
-    if is_json
-      status 400
-      warn "[REGISTER FAILED] Validation error: #{error} for payload: #{raw_body}"
-      return json(error: error)
-    else
-      # Hvis der er en fejl, viser vi registreringssiden igen med en fejlbesked
-      @error = error
-      erb :register
-    end
+    flash[:error] = error
+    redirect '/register'
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db

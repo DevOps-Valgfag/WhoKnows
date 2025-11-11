@@ -220,10 +220,33 @@ end
 # Register (POST) this endpoint process' data from the register formular
 # updated with bcrypt
 post "/api/register" do
-  username = params["username"]
-  email = params["email"]
-  password = params["password"]
-  password2 = params["password2"]
+  # Log the raw request body to help with debugging
+  request.body.rewind # Ensure we can read the body multiple times
+  raw_body = request.body.read
+  warn "[REGISTER ATTEMPT] Received raw body: #{raw_body}"
+  warn "[CONTENT-TYPE] Received: #{request.content_type}"
+  request.body.rewind # Rewind again so Sinatra can process it
+
+  is_json = request.content_type&.include?('application/json')
+
+  if is_json
+    begin
+      # Use the already read raw_body to avoid issues with reading the stream twice
+      data = JSON.parse(raw_body)
+      username = data["username"]
+      email = data["email"]
+      password = data["password"]
+      password2 = data["password2"]
+    rescue JSON::ParserError
+      status 400
+      return json(error: "Invalid JSON")
+    end
+  else
+    username = params["username"]
+    email = params["email"]
+    password = params["password"]
+    password2 = params["password2"]
+  end
 
   # Validation
   error = nil
@@ -237,28 +260,44 @@ post "/api/register" do
     error = 'The two passwords do not match'
   else
     db = connect_db
-    # Tjek om brugernavnet allerede er taget
+    # Tjek om brugernavnet eller email allerede er taget
     user_exists = db.execute("SELECT COUNT(*) FROM users WHERE username = ?", username).first[0] > 0
+    email_exists = db.execute("SELECT COUNT(*) FROM users WHERE email = ?", email).first[0] > 0
     db.close
 
     if user_exists
       error = 'The username is already taken'
+    elsif email_exists
+      error = 'The email is already registered'
     end
   end
 
   if error
-    # Hvis der er en fejl, viser vi registreringssiden igen med en fejlbesked
-    @error = error
-    erb :register
+    if is_json
+      status 400
+      warn "[REGISTER FAILED] Validation error: #{error} for payload: #{raw_body}"
+      return json(error: error)
+    else
+      # Hvis der er en fejl, viser vi registreringssiden igen med en fejlbesked
+      @error = error
+      erb :register
+    end
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db
-    db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
+    db.execute("INSERT INTO users (username, email, password, must_change_password) values (?, ?, ?, ?)", [username, email, hashed_password, 0])
     new_user_id = db.last_insert_row_id
     db.close
-    # Succesfuld registrering, log ind og omdiriger
-    session[:user_id] = new_user_id
-    redirect '/'
+    
+    if is_json
+      status 201
+      warn "[REGISTER SUCCESS] User #{username} created with ID #{new_user_id}"
+      return json(user_id: new_user_id, message: "User created successfully")
+    else
+      # Succesfuld registrering, log ind og omdiriger
+      session[:user_id] = new_user_id
+      redirect '/'
+    end
   end
 end
 

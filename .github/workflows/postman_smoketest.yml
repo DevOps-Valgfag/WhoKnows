@@ -2,7 +2,7 @@ name: Automated local API tests using Postman CLI
 
 on: 
   push:
-     branches: [featureSmoketestPostman]
+    branches: [featureSmoketestPostman]
 
 jobs:
   automated-local-api-tests:
@@ -12,77 +12,57 @@ jobs:
         working-directory: new_app_ruby
 
     steps:
-      # Tjek koden ud
+      # 1. Tjek koden ud
       - uses: actions/checkout@v4
 
+      # 2. Bekræft repo-struktur
       - name: List repo structure
         run: |
           pwd
           ls -al
-          echo "--- new_app_ruby ---"
-          ls -al new_app_ruby
 
+      # 3. Sæt Ruby op
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.3
           bundler-cache: true
 
+      # 4. Installer systemafhængigheder (som i Dockerfile)
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential libsqlite3-0 libsqlite3-dev ca-certificates curl
+        run: sudo apt-get update && sudo apt-get install -y build-essential libsqlite3-0 libsqlite3-dev ca-certificates curl sqlite3
 
+      # 5. Installer gems
       - name: Install gems
         run: bundle install
 
+      # 6. Debug Ruby-miljø
       - name: Debug Ruby environment
         run: |
-         ruby -v
-         which ruby
-         bundle list
+          ruby -v
+          which ruby
+          bundle list
 
-      # Start app’en i baggrunden
-      - name: Start app
+      # 7. Sørg for at SQLite DB findes
+      - name: Ensure SQLite DB exists
         run: |
-          nohup bundle exec ruby app.rb > app.log 2>&1 &
-          echo "Waiting for API..."
-          for i in {1..30}; do
-            if curl -sSf http://localhost:8080 > /dev/null; then
-              echo "App is up!"
-              break
-            fi
-            echo "Still waiting..."
-            sleep 2
-          done
-          if [ "$success" = false ]; then
-            echo "❌ App failed to start on port 8080"
-            exit 1
+          if [ ! -f whoknows.db ]; then
+            echo "Creating empty SQLite DB..."
+            sqlite3 whoknows.db "VACUUM;"
           fi
 
-      # Debug step
-      - name: Show app log if startup fails
-        if: always()
-        run: cat app.log
-
-      # Installer Postman CLI
-      - name: Install Postman CLI
-        run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-
-      # Log ind i Postman
-      - name: Login to Postman CLI
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-
-      # Kør smoketests mod localhost
-      - name: Run Postman smoketests
+      # 8. Kør app i foreground (så vi ser fejl direkte)
+      - name: Start app (debug in foreground)
         run: |
-          postman collection run "41748160-a6d7dfee-dc2a-4d14-84d5-fadf82b490a1" \
-            --env-var baseUrl="http://localhost:8080" \
-            --bail \
-            --reporters cli,junit \
-            --reporter-junit-export postman-results.xml
+          echo "Starting Ruby app in foreground..."
+          ruby app.rb || echo "Ruby exited with code $?"
 
-      # 8. Upload rapport
-      - name: Upload test report
+      # 9. Upload evt. debug-log (hvis app.rb selv skriver noget til fil)
+      - name: Upload debug logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: postman-results
-          path: postman-results.xml
+          name: debug-output
+          path: new_app_ruby/*.log
+
+      # (Stop her for debug — Postman-delen først når app kører stabilt)

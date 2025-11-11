@@ -1,5 +1,12 @@
 <h2>Log In</h2>
-<% if @error %><div class="error"><strong>Error:</strong> <%= @error %></div><% end %>
+
+<% if flash[:info] %>
+  <div class="notice"><%= flash[:info] %></div>
+<% end %>
+
+<% if @error %><div class="error"><strong>Error:</strong> <%= @error %></div>
+<% end %>
+
 <form action="/api/login" method="POST">
   <dl>
     <dt>Username:</dt>
@@ -7,5 +14,5 @@
     <dt>Password:</dt>
     <dd><input type="password" name="password" size="30"></dd>
   </dl>
-  <div class="actions"><input type="submit" value="Log In"></div>
+  <div class="actions"><input type="submit" id="login-button" value="Log In"></div>
 </form>

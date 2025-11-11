@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Local & editor
+*.log
+*.swp
+*.swo
+.vscode
+.idea
+
+# Environment
+.env
+.env.*
+.DS_Store
+
+# Bundler artifacts
+.bundle
+vendor/bundle
+
+# Build cache
+tmp
+coverage
+
+# SQLite (we persist via volume; avoid baking local DB into image)
+*.sqlite3
+*.db
+whoknows.db
+
+# Node artifacts if any front-end builds are present
+node_modules
+dist
+
+docker-compose.yml
+nginx.conf

@@ -15,6 +15,9 @@ jobs:
       # Tjek koden ud
       - uses: actions/checkout@v4
 
+      - name: List repo structure
+        run: ls -R
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -22,10 +25,16 @@ jobs:
           bundler-cache: true
 
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libsqlite3-0 libsqlite3-dev
+        run: sudo apt-get update && sudo apt-get install -y build-essential libsqlite3-0 libsqlite3-dev ca-certificates curl
 
       - name: Install gems
         run: bundle install
+
+      - name: Debug Ruby environment
+        run: |
+         ruby -v
+         which ruby
+         bundle list
 
       # Start app’en i baggrunden
       - name: Start app

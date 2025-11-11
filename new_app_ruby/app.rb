@@ -256,7 +256,7 @@ post "/api/register" do
   else
     hashed_password = BCrypt::Password.create(password)
     db = connect_db
-    db.execute("INSERT INTO users (username, email, password) values (?, ?, ?)", [username, email, hashed_password])
+    db.execute("INSERT INTO users (username, email, password, must_change_password) values (?, ?, ?, ?)", [username, email, hashed_password, 0])
     new_user_id = db.last_insert_row_id
     db.close
     # Succesfuld registrering, log ind og omdiriger

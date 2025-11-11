@@ -259,9 +259,16 @@ post "/api/register" do
     db.execute("INSERT INTO users (username, email, password, must_change_password) values (?, ?, ?, ?)", [username, email, hashed_password, 0])
     new_user_id = db.last_insert_row_id
     db.close
-    # Succesfuld registrering, log ind og omdiriger
-    session[:user_id] = new_user_id
-    redirect '/'
+    
+    if is_json
+      status 201
+      warn "[REGISTER SUCCESS] User #{username} created with ID #{new_user_id}"
+      return json(user_id: new_user_id, message: "User created successfully")
+    else
+      # Succesfuld registrering, log ind og omdiriger
+      session[:user_id] = new_user_id
+      redirect '/'
+    end
   end
 end
 

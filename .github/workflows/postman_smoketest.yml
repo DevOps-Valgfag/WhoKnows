@@ -1,18 +1,65 @@
-name: Automated API tests using Postman CLI
+name: Automated local API tests using Postman CLI
 
-on: push
+on: 
+  push:
+     branches: [featureSmoketestPostman]
 
 jobs:
-  automated-api-tests:
+  automated-local-api-tests:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: new_app_ruby
+
     steps:
+      # 1. Tjek koden ud
       - uses: actions/checkout@v4
-      - name: Install Postman CLI
+
+      # 2. Sæt Ruby op
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+          bundler-cache: true
+
+      # 3. Installer afhængigheder i mappen new_app_ruby
+      - name: Install gems
+        run: bundle install
+
+      # 4. Start app’en i baggrunden
+      - name: Start app
         run: |
-          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+          nohup bundle exec ruby app.rb > app.log 2>&1 &
+          echo "Waiting for API..."
+          for i in {1..30}; do
+            if curl -sSf http://localhost:8080 > /dev/null; then
+              echo "App is up!"
+              break
+            fi
+            echo "Still waiting..."
+            sleep 2
+          done
+
+      # 5. Installer Postman CLI
+      - name: Install Postman CLI
+        run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      # 6. Log ind i Postman
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-      - name: Run API tests
+
+      # 7. Kør smoketests mod localhost
+      - name: Run Postman smoketests
         run: |
           postman collection run "48172914-3de719aa-9ddd-4bb8-98af-e3ad54907231" \
-          --env-var baseUrl="http://51.107.222.64:8080"
+            --env-var baseUrl="http://localhost:8080" \
+            --bail \
+            --reporters cli,junit \
+            --reporter-junit-export postman-results.xml
+
+      # 8. Upload rapport
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-results
+          path: new_app_ruby/postman-results.xml

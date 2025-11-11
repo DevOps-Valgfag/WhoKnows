@@ -12,21 +12,22 @@ jobs:
         working-directory: new_app_ruby
 
     steps:
-      # 1. Tjek koden ud
+      # Tjek koden ud
       - uses: actions/checkout@v4
 
-      # 2. Sæt Ruby op
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.3
           bundler-cache: true
 
-      # 3. Installer afhængigheder i mappen new_app_ruby
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-0 libsqlite3-dev
+
       - name: Install gems
         run: bundle install
 
-      # 4. Start app’en i baggrunden
+      # Start app’en i baggrunden
       - name: Start app
         run: |
           nohup bundle exec ruby app.rb > app.log 2>&1 &
@@ -39,21 +40,25 @@ jobs:
             echo "Still waiting..."
             sleep 2
           done
+          if [ "$success" = false ]; then
+            echo "❌ App failed to start on port 8080"
+            exit 1
+          fi
 
       # Debug step
       - name: Show app log if startup fails
         if: always()
         run: cat new_app_ruby/app.log
 
-      # 5. Installer Postman CLI
+      # Installer Postman CLI
       - name: Install Postman CLI
         run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
 
-      # 6. Log ind i Postman
+      # Log ind i Postman
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
 
-      # 7. Kør smoketests mod localhost
+      # Kør smoketests mod localhost
       - name: Run Postman smoketests
         run: |
           postman collection run "41748160-a6d7dfee-dc2a-4d14-84d5-fadf82b490a1" \

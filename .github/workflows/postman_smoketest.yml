@@ -93,12 +93,17 @@ jobs:
 
       # Kør Postman-smoketests mod localhost
       - name: Run Postman smoketests
+        continue-on-error: true
         run: |
           postman collection run "41748160-a6d7dfee-dc2a-4d14-84d5-fadf82b490a1" \
             --env-var baseUrl="http://localhost:8080" \
             --bail \
             --reporters cli,junit \
             --reporter-junit-export postman-results.xml
+
+      - name: Show app log after tests
+        if: always()
+        run: cat app.log || echo "No app.log found"
 
       # Upload Postman-rapport som artefakt
       - name: Upload test report

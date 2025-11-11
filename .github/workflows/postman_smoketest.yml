@@ -61,7 +61,7 @@ jobs:
       # Debug step
       - name: Show app log if startup fails
         if: always()
-        run: cat new_app_ruby/app.log
+        run: cat app.log
 
       # Installer Postman CLI
       - name: Install Postman CLI
@@ -85,4 +85,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: postman-results
-          path: new_app_ruby/postman-results.xml
+          path: postman-results.xml

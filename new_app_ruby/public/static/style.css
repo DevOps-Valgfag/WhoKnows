@@ -155,35 +155,59 @@ ul.flashes {
 
 /* 8. Modern Search Bar Style */
 .search-form {
+  position: relative;
+  max-width: 600px; /* Adjust width as needed */
+  margin: 2rem auto;
+}
+
+.search-input-container {
+  position: relative;
   display: flex;
-  max-width: 100%;
-  margin: 0 auto 2rem auto;
-  width: 100%; /* Ensure the form takes up the available space */
+  align-items: center;
 }
 
 #search-input {
-  flex-grow: 1; /* Allows the input to fill all available space */
-  width: auto; /* Overrides the default 100% width */
-  margin-bottom: 0; /* Removes the bottom margin from the generic input style */
-  
-  /* Add padding to give text inside the input field space */
-  padding: 0.75rem 1.25rem;
-
-  /* Explicitly define the border to override browser defaults */
+  width: 100%;
+  padding: 1rem 3.5rem 1rem 3rem; /* Padding for icons */
   border: 1px solid var(--border-color);
-  border-right: none;
+  border-radius: 9999px; /* Fully rounded corners */
+  font-size: 1rem;
+  box-sizing: border-box;
+  background-color: var(--background);
+}
 
-  /* Explicitly set the corner radius */
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+#search-input:focus {
+  outline: 2px solid var(--primary-accent);
+  border-color: transparent;
+}
+
+.search-icon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  top: 0;
+  left: 1rem;
+  color: var(--text-secondary);
 }
 
 #search-button {
-  /* Makes the button join seamlessly with the input */
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.5rem;
+  border-radius: 50%; /* Make it a circle */
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#search-button svg {
+  stroke: white;
 }
 
 /* 9. Modern About Page Style (CSS-Only) */

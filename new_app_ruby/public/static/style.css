@@ -4,7 +4,8 @@
 
 /* 1. Define a Color Palette and Global Styles */
 :root {
-  --background: #ffffff;
+  --background: #f9fafb;
+  --card-background: #ffffff;
   --text-primary: #111827;
   --text-secondary: #6b7280;
   --primary-accent: #4f46e5;
@@ -231,7 +232,7 @@ ul.flashes {
   padding: 2rem;
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  background-color: #fff;
+  background-color: var(--card-background);
 }
 
 .login-container h2 {

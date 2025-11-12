@@ -138,8 +138,8 @@ button:hover, input[type="submit"]:hover {
 }
 
 .search-result p {
-  color: var(--text-secondary);
   margin: 0;
+  color: #555;
 }
 
 .error, .flashes li {
@@ -346,5 +346,23 @@ ul.flashes {
   height: auto; /* Override the inline style */
   border-radius: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
 }
 

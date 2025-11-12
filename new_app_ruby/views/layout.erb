@@ -17,11 +17,6 @@
       <% end %>
     </nav>
   </div>
-  <% if flash[:error] %>
-    <ul class="flashes">
-      <li><%= flash[:error] %></li>
-    </ul>
-  <% end %>
   <div class="body">
     <%= yield %>
   </div>

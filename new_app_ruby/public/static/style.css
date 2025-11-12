@@ -210,6 +210,76 @@ ul.flashes {
   stroke: white;
 }
 
+/* Login Page Styles */
+.login-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background-color: #fff;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.form-group input {
+  margin-bottom: 0; /* Override default */
+}
+
+.actions {
+  margin-top: 1.5rem;
+}
+
+#login-button {
+  width: 100%;
+  background-color: var(--primary-accent);
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px; /* Full-pill shape */
+  padding: 1rem;
+}
+
+#login-button:hover {
+  background-color: var(--primary-accent-hover);
+}
+
+.forgot-password {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.create-account-link {
+  display: block;
+  max-width: 400px;
+  margin: 1rem auto;
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.create-account-link:hover {
+  background-color: #f9f9f9;
+  text-decoration: none;
+}
+
 /* 9. Modern About Page Style (CSS-Only) */
 
 /* Target the h1 specifically on a page that starts with it */

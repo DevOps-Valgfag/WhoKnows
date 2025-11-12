@@ -1,19 +1,36 @@
-<h2>Sign Up</h2>
-<% if flash[:error] %>
-  <div class="error">
-    <strong>Error:</strong> <%= flash[:error] %>
-  </div>
-<% end %>
-<form action="/api/register" method="POST">
-  <dl>
-    <dt>Username:</dt>
-    <dd><input type="text" name="username" size="30" value="<%= params[:username] %>"></dd>
-    <dt>E-Mail:</dt>
-    <dd><input type="text" name="email" size="30" value="<%= params[:email] %>"></dd>
-    <dt>Password:</dt>
-    <dd><input type="password" name="password" size="30"></dd>
-    <dt>Password <small>(repeat)</small>:</dt>
-    <dd><input type="password" name="password2" size="30"></dd>
-  </dl>
-  <div class="actions"><input type="submit" value="Sign Up"></div>
-</form>
+<div class="login-container">
+  <h2 style="text-align: center;">Sign Up</h2>
+
+  <% if flash[:error] %>
+    <div class="error" style="text-align: center;"><%= flash[:error] %></div>
+  <% end %>
+
+  <form action="/api/register" method="POST">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" value="<%= params[:username] %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">E-Mail</label>
+      <input type="text" id="email" name="email" value="<%= params[:email] %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password2">Password <small>(repeat)</small></label>
+      <input type="password" id="password2" name="password2" required>
+    </div>
+
+    <div class="actions">
+      <input type="submit" id="register-button" value="Sign Up">
+    </div>
+  </form>
+</div>
+<div class="login-link">
+  Already have an account? <a href="/login">Log in</a>
+</div>

@@ -280,6 +280,26 @@ ul.flashes {
   text-decoration: none;
 }
 
+#register-button {
+  width: 100%;
+  background-color: var(--primary-accent);
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px; /* Full-pill shape */
+  padding: 1rem;
+  margin-top: 1.5rem;
+}
+
+#register-button:hover {
+  background-color: var(--primary-accent-hover);
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--text-secondary);
+}
+
 /* 9. Modern About Page Style (CSS-Only) */
 
 /* Target the h1 specifically on a page that starts with it */

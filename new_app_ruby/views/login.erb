@@ -1,18 +1,28 @@
-<h2>Log In</h2>
+<div class="login-container">
+  <h2 style="text-align: center;">Log In</h2>
 
-<% if flash[:info] %>
-  <div class="notice"><%= flash[:info] %></div>
-<% end %>
+  <% if flash[:info] %>
+    <div class="notice"><%= flash[:info] %></div>
+  <% end %>
 
-<% if @error %><div class="error"><strong>Error:</strong> <%= @error %></div>
-<% end %>
+  <% if @error %>
+    <div class="error" style="text-align: center;"><%= @error %></div>
+  <% end %>
 
-<form action="/api/login" method="POST">
-  <dl>
-    <dt>Username:</dt>
-    <dd><input type="text" name="username" size="30" value="<%= params[:username] %>"></dd>
-    <dt>Password:</dt>
-    <dd><input type="password" name="password" size="30"></dd>
-  </dl>
-  <div class="actions"><input type="submit" id="login-button" value="Log In"></div>
-</form>
+  <form action="/api/login" method="POST">
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" value="<%= params[:username] %>" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <div class="actions">
+      <input type="submit" id="login-button" value="Log In">
+    </div>
+  </form>
+</div>
+<a href="/register" class="create-account-link">Create an account</a>

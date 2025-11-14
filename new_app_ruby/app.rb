@@ -8,6 +8,7 @@ require "sinatra/flash"
 require "dotenv/load"
 require "httparty" # Gem for making HTTP requests
 require "time"
+require "logger"
 
 # Mere detaljerede muligheder for debug (både bedre browser og terminal visning)
 # set :show_exceptions, true
@@ -18,6 +19,18 @@ configure do
   enable :sessions
   set :session_secret, ENV.fetch("SESSION_SECRET")
   register Sinatra::Flash
+
+  # Setup logging
+  log_dir = File.join(settings.root, 'logs')
+  Dir.mkdir(log_dir) unless File.exist?(log_dir)
+  
+  # Application logger
+  logger = Logger.new(File.join(log_dir, "#{settings.environment}.log"), 'daily')
+  logger.level = Logger::INFO
+  set :logger, logger
+  
+  # Access logger
+  use Rack::CommonLogger, logger
 end
 
 # ----------------------------
@@ -210,7 +223,7 @@ post "/change_password" do
       flash[:success] = "Password updated successfully!"
       redirect '/api/search?q='
     rescue => e
-      warn "[change_password] ERROR: #{e.class} - #{e.message}"
+      settings.logger.error "[change_password] ERROR: #{e.class} - #{e.message}"
       flash[:error] = "An unexpected error occurred: #{e.message}"
       redirect '/change_password'
     end
@@ -234,7 +247,7 @@ post "/api/register" do
     begin
       data = JSON.parse(raw_body)
       params.merge!(data) # flet ind i params så resten fungerer som før
-      warn "[REGISTER] Parsed JSON body: #{data.inspect}"
+      settings.logger.info "[REGISTER] Parsed JSON body: #{data.inspect}"
     rescue JSON::ParserError
       halt 400, "Invalid JSON payload"
     end
@@ -246,7 +259,8 @@ post "/api/register" do
   password  = params["password"]
   password2 = params["password2"]
 
-  warn "[REGISTER] Incoming params: #{params.inspect}"
+  log_params = params.reject { |k, _| ['password', 'password2'].include?(k) }
+  settings.logger.info "[REGISTER] Incoming params: #{log_params.inspect}"
 
   # Validation
   error = nil
@@ -292,10 +306,10 @@ post "/api/register" do
       db.close
 
       session[:user_id] = new_user_id
-      warn "[REGISTER] Created user #{username} (ID=#{new_user_id})"
+      settings.logger.info "[REGISTER] Created user #{username} (ID=#{new_user_id})"
       redirect '/'
     rescue => e
-      warn "[REGISTER] ERROR: #{e.class} - #{e.message}"
+      settings.logger.error "[REGISTER] ERROR: #{e.class} - #{e.message}"
       flash[:error] = "Could not register user: #{e.message}"
       redirect '/register'
     end
@@ -358,11 +372,11 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
 
   # tjek om der findes frisk cache data (indenfor ttl) → brug den
   if CACHE[:weather][city_key] && CACHE[:expires_at][city_key] > now
-    warn "[CACHE HIT] Bruger cached data for #{city}"
+    settings.logger.info "[CACHE HIT] Bruger cached data for #{city}"
     return { data: CACHE[:weather][city_key], status: :fresh }
   end
 
-  warn "[CACHE MISS] Henter nyt data for #{city} fra API"
+  settings.logger.info "[CACHE MISS] Henter nyt data for #{city} fra API"
   url = "https://wttr.in/#{URI.encode_www_form_component(city)}?format=j1"
   begin
     response = HTTParty.get(url, timeout: 5)
@@ -384,7 +398,7 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
       end
     end
   rescue StandardError => e
-    warn "[weather] error for #{city}: #{e.class} #{e.message}"
+    settings.logger.error "[weather] error for #{city}: #{e.class} #{e.message}"
     if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
       return { data: CACHE[:weather][city_key], status: :stale }
     else

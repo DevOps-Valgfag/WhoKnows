@@ -352,7 +352,13 @@ CACHE = {
 }
 
 # Helper method to fetch weather data from the external service
-def get_weather_data(city, ttl: 300, stale_until: 36000)
+def get_weather_data(city, timeout: 5, ttl: 300, stale_until: 36000, simulate_timeout: false)
+  # Simulate a timeout if requested
+  if simulate_timeout
+    warn "[SIMULATING TIMEOUT] Sleeping for #{timeout + 1} seconds..."
+    sleep(timeout + 1)
+  end
+
   now = Time.now
   city_key = city.downcase
 
@@ -365,7 +371,7 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
   warn "[CACHE MISS] Henter nyt data for #{city} fra API"
   url = "https://wttr.in/#{URI.encode_www_form_component(city)}?format=j1"
   begin
-    response = HTTParty.get(url, timeout: 5)
+    response = HTTParty.get(url, timeout: timeout)
     if response.code == 200
       data = JSON.parse(response.body)
 
@@ -397,7 +403,7 @@ end
 
 get "/api/weather" do
   city = params['city'] || "Copenhagen"
-  result = get_weather_data(city)
+  result = get_weather_data(city, timeout: 9)
 
   if result
     content_type :json
@@ -416,7 +422,7 @@ end
 
 get "/weather" do
   @city = params["city"] || "Copenhagen"
-  result = get_weather_data(@city)
+  result = get_weather_data(@city, timeout: 5)
 
   if result
     @current_condition = result[:data]["current_condition"][0]

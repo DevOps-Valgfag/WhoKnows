@@ -30,7 +30,11 @@ set :bind, "0.0.0.0"
 # ----------------------------
 # Database path
 # ----------------------------
-DB_PATH = File.join(settings.root, 'whoknows.db')
+DB_PATH = if ENV['TEST_ENV'] == 'true'
+             File.join(settings.root, 'test.db')
+           else
+             File.join(settings.root, 'whoknows.db')
+           end
 
 # Helper: åbn DB
 def connect_db

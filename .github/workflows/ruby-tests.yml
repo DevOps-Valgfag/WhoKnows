@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SESSION_SECRET: "ci_dummy_secret"
+      SESSION_SECRET: "86f7f8e880d3bfc0954041ef2c47363160c38315761ccfd2909dde4fb7669537"
+      RACK_ENV: "test"
+      TEST_ENV: "true"
 
     steps:
       - name: Checkout code
@@ -24,6 +26,39 @@ jobs:
       - name: Install dependencies
         working-directory: new_app_ruby
         run: bundle install
+
+      - name: Prepare test database
+        working-directory: new_app_ruby
+        run: |
+          # Start clean each run
+          rm -f test.db
+
+          # Recreate tables to match real schema
+          sqlite3 test.db "CREATE TABLE pages (
+              title TEXT PRIMARY KEY UNIQUE,
+              url TEXT NOT NULL UNIQUE,
+              language TEXT NOT NULL CHECK(language IN ('en', 'da')) DEFAULT 'en',
+              last_updated TIMESTAMP,
+              content TEXT NOT NULL
+          );"
+
+          sqlite3 test.db "CREATE TABLE users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT NOT NULL UNIQUE,
+              email TEXT NOT NULL UNIQUE,
+              password TEXT NOT NULL,
+              must_change_password INTEGER DEFAULT 1
+          );"
+
+          # Seed a realistic MATLAB page so the search test has something to find
+          sqlite3 test.db \"INSERT INTO pages (title, url, language, last_updated, content)
+            VALUES (
+              'MATLAB',
+              'http://web.archive.org/web/20090110165251/http://en.wikipedia.org:80/wiki/Matlab',
+              'en',
+              '2009-01-10 00:00:00',
+              'MATLAB is a numerical computing environment and programming language used for matrix computations, algorithm development, data analysis and visualization.'
+            );\"
 
       - name: Run RSpec tests
         working-directory: new_app_ruby

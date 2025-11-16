@@ -2,9 +2,7 @@ name: Ruby tests (RSpec)
 
 on:
   push:
-    branches: [ dev, main, testing-setup ]
-  pull_request:
-    branches: [ dev, main, testing-setup ]
+    branches: [ dev, main, "feature/testing-setup" ]
 
 jobs:
   test:

@@ -8,6 +8,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      SESSION_SECRET: "ci_dummy_secret"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

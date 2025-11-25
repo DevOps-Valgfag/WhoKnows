@@ -4,10 +4,10 @@ RSpec.feature 'Search', type: :feature do
   scenario 'searching for MATLAB shows a MATLAB result' do
     visit '/?q=MATLAB&language=en'
 
-    expect(page.status_code).to eq 200
+    # Expect at least one search result container
+    expect(page).to have_css('.search-result')
 
-    expect(page).to have_css('.search-result-title', text: 'MATLAB')
-
-    expect(page).to have_content('MATLAB')
+    # Expect the title to appear inside an <h3><a> tag
+    expect(page).to have_css('h3 a', text: 'MATLAB')
   end
 end

@@ -220,6 +220,8 @@ post "/api/login" do
     # Hvis login er succesfuldt
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
 
+    USER_LOGGED_IN.increment  # Dette ifm metrics (monitorering)
+
     # Brugeren bliver prompted for at ændre password ved første login efter breach
     if user['must_change_password'].to_i == 1
       redirect '/change_password'
@@ -341,6 +343,8 @@ post "/api/register" do
                   VALUES (?, ?, ?, ?)", [username, email, hashed_password, 0])
       new_user_id = db.last_insert_row_id
       db.close
+
+      USER_REGISTERED.increment # Dette ifm metrics (monitorering)
 
       session[:user_id] = new_user_id
       warn "[REGISTER] Created user #{username} (ID=#{new_user_id})"

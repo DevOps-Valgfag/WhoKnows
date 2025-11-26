@@ -9,6 +9,39 @@ require "dotenv/load"
 require "httparty" # Gem for making HTTP requests
 require "time"
 
+require "prometheus/client"
+require "prometheus/client/formats/text"
+
+PROM_REGISTRY = Prometheus::Client.registry
+
+SEARCH_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_search_total,
+  docstring: "Total number of searches",
+  labels: [:language]
+)
+
+SEARCH_MATCH_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_search_with_match_total,
+  docstring: "Number of searches with at least one match",
+  labels: [:language]
+)
+
+USER_REGISTERED = Prometheus::Client::Counter.new(
+  :whoknows_registered_users_total,
+  docstring: "Total number of registered users"
+)
+
+USER_LOGGED_IN = Prometheus::Client::Counter.new(
+  :whoknows_login_total,
+  docstring: "Total number of successful logins"
+)
+
+PROM_REGISTRY.register(SEARCH_COUNTER)
+PROM_REGISTRY.register(SEARCH_MATCH_COUNTER)
+PROM_REGISTRY.register(USER_REGISTERED)
+PROM_REGISTRY.register(USER_LOGGED_IN)
+
+
 # Mere detaljerede muligheder for debug (både bedre browser og terminal visning)
 # set :show_exceptions, true
 # set :raise_errors, true
@@ -100,16 +133,21 @@ get "/" do
   db = connect_db
   db.results_as_hash = true
 
-  @search_results = if q
-    # This part correctly handles the search query from the form
-    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
+  if q
+    @search_results = db.execute(
+      "SELECT * FROM pages WHERE language = ? AND content LIKE ?",
+      [language, "%#{q}%"]
+    )
+
+    # Metrics
+    SEARCH_COUNTER.increment(labels: { language: language })
+    SEARCH_MATCH_COUNTER.increment(labels: { language: language }) if @search_results.any?
   else
-    []
+    @search_results = []
   end
 
   db.close
 
-  # This renders the search page with the results
   erb :search
 end
 
@@ -149,16 +187,21 @@ get "/api/search" do
   db = connect_db
   db.results_as_hash = true
 
-  @search_results = if q
-    # This part correctly handles the search query from the form
-    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
+  if q
+    @search_results = db.execute(
+      "SELECT * FROM pages WHERE language = ? AND content LIKE ?",
+      [language, "%#{q}%"]
+    )
+
+    # Metrics
+    SEARCH_COUNTER.increment(labels: { language: language })
+    SEARCH_MATCH_COUNTER.increment(labels: { language: language }) if @search_results.any?
   else
-    []
+    @search_results = []
   end
 
   db.close
 
-  # This renders the search page with the results
   erb :search
 end
 
@@ -180,6 +223,8 @@ post "/api/login" do
   else
     # Hvis login er succesfuldt
     session[:user_id] = user['id'] # Vi skal bruge sessions her!
+
+    USER_LOGGED_IN.increment  # Dette ifm metrics (monitorering)
 
     # Brugeren bliver prompted for at ændre password ved første login efter breach
     if user['must_change_password'].to_i == 1
@@ -303,6 +348,8 @@ post "/api/register" do
       new_user_id = db.last_insert_row_id
       db.close
 
+      USER_REGISTERED.increment # Dette ifm metrics (monitorering)
+
       session[:user_id] = new_user_id
       warn "[REGISTER] Created user #{username} (ID=#{new_user_id})"
       redirect '/'
@@ -350,6 +397,15 @@ get "/debug/headers" do
   env.select { |k, v| k.start_with?("HTTP_") }
      .map { |k, v| "#{k}: #{v}" }
      .join("<br>")
+end
+
+# ----------------------------
+# /metrics endpoint ifm monitorering (Prometheus / Grafana)
+# ----------------------------
+
+get "/metrics" do
+  content_type "text/plain"
+  Prometheus::Client::Formats::Text.marshal(PROM_REGISTRY)
 end
 
 

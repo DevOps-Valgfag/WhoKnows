@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    ast (2.4.3)
     base64 (0.3.0)
     bcrypt (3.1.20)
     bigdecimal (3.2.3)
@@ -10,6 +11,9 @@ GEM
       csv
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
+    json (2.16.0)
+    language_server-protocol (3.17.0.5)
+    lint_roller (1.1.0)
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
     multi_json (1.17.0)
@@ -18,12 +22,46 @@ GEM
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
     nio4r (2.7.4)
+    parallel (1.27.0)
+    parser (3.3.10.0)
+      ast (~> 2.4.1)
+      racc
+    prism (1.6.0)
     puma (6.6.1)
       nio4r (~> 2.0)
+    racc (1.8.1)
     rack (2.2.17)
     rack-protection (3.2.0)
       base64 (>= 0.1.0)
       rack (~> 2.2, >= 2.2.4)
+    rainbow (3.1.1)
+    regexp_parser (2.11.3)
+    rubocop (1.81.7)
+      json (~> 2.3)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.1.0)
+      parallel (~> 1.10)
+      parser (>= 3.3.0.2)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 2.9.3, < 3.0)
+      rubocop-ast (>= 1.47.1, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 4.0)
+    rubocop-ast (1.48.0)
+      parser (>= 3.3.7.2)
+      prism (~> 1.4)
+    rubocop-minitest (0.38.2)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
+    rubocop-performance (1.26.1)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.47.1, < 2.0)
+    rubocop-rake (0.7.1)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.72.1)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     sinatra (3.2.0)
       mustermann (~> 3.0)
@@ -47,6 +85,9 @@ GEM
     sqlite3 (1.7.3-x86_64-darwin)
     sqlite3 (1.7.3-x86_64-linux)
     tilt (2.6.1)
+    unicode-display_width (3.2.0)
+      unicode-emoji (~> 4.1)
+    unicode-emoji (4.1.0)
 
 PLATFORMS
   aarch64-linux
@@ -62,6 +103,10 @@ DEPENDENCIES
   dotenv (~> 3.1)
   httparty
   puma (~> 6.0)
+  rubocop
+  rubocop-minitest
+  rubocop-performance
+  rubocop-rake
   sinatra (~> 3.2)
   sinatra-contrib (~> 3.2)
   sinatra-flash (~> 0.3.0)

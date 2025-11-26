@@ -1,28 +1,34 @@
 # Gemfile
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
 # Web framework
-gem "sinatra", "~> 3.2"
+gem 'sinatra', '~> 3.2'
 
 # Ekstra Sinatra-helpers (fx sinatra/json)
-gem "sinatra-contrib", "~> 3.2"
+gem 'sinatra-contrib', '~> 3.2'
 
 # Flash messages
-gem "sinatra-flash", "~> 0.3.0"
+gem 'sinatra-flash', '~> 0.3.0'
 
 # Webserver
-gem "puma", "~> 6.0"
+gem 'puma', '~> 6.0'
 
 # Database
-gem "sqlite3", "~> 1.7"
+gem 'sqlite3', '~> 1.7'
 
 # Password hashing
-gem "bcrypt", "~> 3.1"
+gem 'bcrypt', '~> 3.1'
 
 # In order to use secrets from .env file
-gem "dotenv", "~> 3.1"
-
+gem 'dotenv', '~> 3.1'
 
 # YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem
 
 gem 'httparty'
+
+group :development, :test do
+  gem 'rubocop', require: false
+  gem 'rubocop-minitest', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rake', require: false
+end

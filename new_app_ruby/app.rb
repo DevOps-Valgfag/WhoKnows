@@ -1,22 +1,22 @@
-require "sinatra"
-require "sinatra/json"
-require "yaml"
-require "json"
-require "sqlite3"
-require "bcrypt"
-require "sinatra/flash"
-require "dotenv/load"
-require "httparty" # Gem for making HTTP requests
-require "time"
+require 'sinatra'
+require 'sinatra/json'
+require 'yaml'
+require 'json'
+require 'sqlite3'
+require 'bcrypt'
+require 'sinatra/flash'
+require 'dotenv/load'
+require 'httparty' # Gem for making HTTP requests
+require 'time'
 
 # Mere detaljerede muligheder for debug (både bedre browser og terminal visning)
 # set :show_exceptions, true
 # set :raise_errors, true
 
 configure do
-  set :trust_proxy, true    # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
+  set :trust_proxy, true # Fortæller Sinatra at stole på Nginx’ headers, så vi får korrekt redirect ved deploy
   enable :sessions
-  set :session_secret, ENV.fetch("SESSION_SECRET")
+  set :session_secret, ENV.fetch('SESSION_SECRET')
   register Sinatra::Flash
 end
 
@@ -24,8 +24,7 @@ end
 # Server konfiguration
 # ----------------------------
 set :port, 8080
-set :bind, "0.0.0.0"
-
+set :bind, '0.0.0.0'
 
 # ----------------------------
 # Database path
@@ -40,23 +39,23 @@ end
 # ----------------------------
 # Load OpenAPI spec
 # ----------------------------
-SPEC_FILE = File.expand_path("open_api.yaml", __dir__)
+SPEC_FILE = File.expand_path('open_api.yaml', __dir__)
 OPENAPI_SPEC = YAML.load_file(SPEC_FILE)
 
 # Serve YAML
-get "/open_api.yaml" do
-  content_type "application/yaml"
+get '/open_api.yaml' do
+  content_type 'application/yaml'
   File.read(SPEC_FILE)
 end
 
 # Serve JSON
-get "/open_api.json" do
+get '/open_api.json' do
   content_type :json
   JSON.pretty_generate(OPENAPI_SPEC)
 end
 
 # Openapi docs with Swagger UI
-get "/docs" do
+get '/docs' do
   <<-HTML
   <!DOCTYPE html>
   <html>
@@ -84,24 +83,25 @@ helpers do
   def truncate_text(text, max_words)
     words = text.split
     return text if words.length <= max_words
-    words[0...max_words].join(" ") + "..."
+
+    words[0...max_words].join(' ') + '...'
   end
 end
 
 # Root endpoint
-get "/" do
-  q = params["q"]
-  language = params["language"] || "en"
+get '/' do
+  q = params['q']
+  language = params['language'] || 'en'
 
   db = connect_db
   db.results_as_hash = true
 
   @search_results = if q
-    # This part correctly handles the search query from the form
-    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
-  else
-    []
-  end
+                      # This part correctly handles the search query from the form
+                      db.execute('SELECT * FROM pages WHERE language = ? AND content LIKE ?', [language, "%#{q}%"])
+                    else
+                      []
+                    end
 
   db.close
 
@@ -117,11 +117,11 @@ before do
   # Global variabel to contain data
   env['g'] ||= {}
   env['g']['db'] = connect_db
-  env['g']['db'].results_as_hash = true  # med denne returnerer SQLite rækker som hashes i stedet for arrays..
+  env['g']['db'].results_as_hash = true # med denne returnerer SQLite rækker som hashes i stedet for arrays..
 
   # Handle user-session
   if session[:user_id]
-    user = env['g']['db'].execute("SELECT * FROM users WHERE id = ?", session[:user_id]).first
+    user = env['g']['db'].execute('SELECT * FROM users WHERE id = ?', session[:user_id]).first
     env['g']['user'] = user
   else
     env['g']['user'] = nil
@@ -134,23 +134,23 @@ after do
 end
 
 # ----------------------------
-# API Endpoints 
+# API Endpoints
 # ----------------------------
 
 # Search API
-get "/api/search" do
-  q = params["q"]
-  language = params["language"] || "en"
+get '/api/search' do
+  q = params['q']
+  language = params['language'] || 'en'
 
   db = connect_db
   db.results_as_hash = true
 
   @search_results = if q
-    # This part correctly handles the search query from the form
-    db.execute("SELECT * FROM pages WHERE language = ? AND content LIKE ?", [language, "%#{q}%"])
-  else
-    []
-  end
+                      # This part correctly handles the search query from the form
+                      db.execute('SELECT * FROM pages WHERE language = ? AND content LIKE ?', [language, "%#{q}%"])
+                    else
+                      []
+                    end
 
   db.close
 
@@ -159,13 +159,13 @@ get "/api/search" do
 end
 
 # Login (POST)
-post "/api/login" do
-  username = params["username"]
-  password = params["password"]
+post '/api/login' do
+  username = params['username']
+  password = params['password']
 
   db = connect_db
   db.results_as_hash = true
-  user = db.execute("SELECT * FROM users WHERE username = ?", username).first
+  user = db.execute('SELECT * FROM users WHERE username = ?', username).first
   db.close
 
   error = nil
@@ -191,33 +191,33 @@ post "/api/login" do
   end
 end
 
-# Register (POST) 
-post "/change_password" do
+# Register (POST)
+post '/change_password' do
   # Sørg for at brugeren stadig er logget ind
   unless env['g']['user']
-    flash[:error] = "Session expired. Please log in again."
+    flash[:error] = 'Session expired. Please log in again.'
     redirect '/login'
   end
 
-  new_pw  = params["new_password"]
-  new_pw2 = params["new_password2"]
+  new_pw  = params['new_password']
+  new_pw2 = params['new_password2']
 
   if new_pw.to_s.empty? || new_pw != new_pw2
-    flash[:error] = "Passwords must match and not be empty"
+    flash[:error] = 'Passwords must match and not be empty'
     redirect '/change_password'
   else
     begin
       db = connect_db
       hashed = BCrypt::Password.create(new_pw)
       db.execute(
-        "UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?",
+        'UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?',
         [hashed, env['g']['user']['id']]
       )
       db.close
 
-      flash[:success] = "Password updated successfully!"
+      flash[:success] = 'Password updated successfully!'
       redirect '/api/search?q='
-    rescue => e
+    rescue StandardError => e
       warn "[change_password] ERROR: #{e.class} - #{e.message}"
       flash[:error] = "An unexpected error occurred: #{e.message}"
       redirect '/change_password'
@@ -227,13 +227,13 @@ end
 
 # Register (POST) this endpoint process' data from the register formular
 # updated with bcrypt
-post "/api/register" do
+post '/api/register' do
   # --- Tillad både form-data og JSON body ---
   request.body.rewind
   raw_body = request.body.read
 
   content_type_hdr = request.media_type || request.content_type # begge virker i Sinatra
-  is_json_ct = content_type_hdr && content_type_hdr.downcase.include?("application/json")
+  is_json_ct = content_type_hdr && content_type_hdr.downcase.include?('application/json')
 
   first_char = raw_body.lstrip[0]
   looks_like_json = !raw_body.to_s.strip.empty? && ['{', '['].include?(first_char)
@@ -244,15 +244,15 @@ post "/api/register" do
       params.merge!(data) # flet ind i params så resten fungerer som før
       warn "[REGISTER] Parsed JSON body: #{data.inspect}"
     rescue JSON::ParserError
-      halt 400, "Invalid JSON payload"
+      halt 400, 'Invalid JSON payload'
     end
   end
 
   # --- Herefter fungerer resten som før ---
-  username  = params["username"]
-  email     = params["email"]
-  password  = params["password"]
-  password2 = params["password2"]
+  username  = params['username']
+  email     = params['email']
+  password  = params['password']
+  password2 = params['password2']
 
   warn "[REGISTER] Incoming params: #{params.inspect}"
 
@@ -268,8 +268,8 @@ post "/api/register" do
     error = 'The two passwords do not match'
   else
     db = connect_db
-    user_exists  = db.execute("SELECT COUNT(*) FROM users WHERE username = ?", username).first[0] > 0
-    email_exists = db.execute("SELECT COUNT(*) FROM users WHERE email = ?", email).first[0] > 0
+    user_exists  = db.execute('SELECT COUNT(*) FROM users WHERE username = ?', username).first[0] > 0
+    email_exists = db.execute('SELECT COUNT(*) FROM users WHERE email = ?', email).first[0] > 0
     db.close
 
     if user_exists
@@ -302,7 +302,7 @@ post "/api/register" do
       session[:user_id] = new_user_id
       warn "[REGISTER] Created user #{username} (ID=#{new_user_id})"
       redirect '/'
-    rescue => e
+    rescue StandardError => e
       warn "[REGISTER] ERROR: #{e.class} - #{e.message}"
       flash[:error] = "Could not register user: #{e.message}"
       redirect '/register'
@@ -311,29 +311,29 @@ post "/api/register" do
 end
 
 # Logout
-get "/api/logout" do
+get '/api/logout' do
   session.clear # removes all session data, also user_id
-  flash[:info] = "Thank you for now. Log in again to continue searching and get the most out of the application."
+  flash[:info] = 'Thank you for now. Log in again to continue searching and get the most out of the application.'
   redirect '/login'
 end
 
 # About page
-get "/about" do
+get '/about' do
   erb :about
 end
 
 # Login page
-get "/login" do
+get '/login' do
   erb :login
 end
 
-get "/change_password" do
+get '/change_password' do
   redirect '/login' unless env['g']['user'] # skal være logget ind
   erb :change_password
 end
 
 # Register page, this one only shows the reg formular
-get "/register" do
+get '/register' do
   erb :register
 end
 
@@ -341,13 +341,12 @@ end
 # debug route ifm redirect problemer ved deploy med reverse proxy
 # ----------------------------
 
-get "/debug/headers" do
-  content_type "text/html"
-  env.select { |k, v| k.start_with?("HTTP_") }
+get '/debug/headers' do
+  content_type 'text/html'
+  env.select { |k, _v| k.start_with?('HTTP_') }
      .map { |k, v| "#{k}: #{v}" }
-     .join("<br>")
+     .join('<br>')
 end
-
 
 # ----------------------------
 # NEW: Weather Endpoints
@@ -356,11 +355,11 @@ end
 CACHE = {
   weather: {}, # saves data per city
   expires_at: {},  # fresh-ttl
-  stale_until: {}  # max expire 
+  stale_until: {}  # max expire
 }
 
 # Helper method to fetch weather data from the external service
-def get_weather_data(city, ttl: 300, stale_until: 36000)
+def get_weather_data(city, ttl: 300, stale_until: 36_000)
   now = Time.now
   city_key = city.downcase
 
@@ -378,33 +377,34 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
       data = JSON.parse(response.body)
 
       # Gem i cache med TTL
-      CACHE[:weather][city_key]   = data
+      CACHE[:weather][city_key] = data
       CACHE[:expires_at][city_key] = now + ttl
       CACHE[:stale_until][city_key] = now + stale_until
 
-      return { data: data, status: :fresh }
+      { data: data, status: :fresh }
     else
-      # Fallback if API fails 
+      # Fallback if API fails
       if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
         return { data: CACHE[:weather][city_key], status: :stale }
-      else
-        return nil
       end
+
+      nil
+
     end
   rescue StandardError => e
     warn "[weather] error for #{city}: #{e.class} #{e.message}"
     if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
       return { data: CACHE[:weather][city_key], status: :stale }
-    else
-      return nil
     end
+
+    nil
   end
 end
 
 # Endpoint 1: API endpoint that returns JSON data
 
-get "/api/weather" do
-  city = params['city'] || "Copenhagen"
+get '/api/weather' do
+  city = params['city'] || 'Copenhagen'
   result = get_weather_data(city)
 
   if result
@@ -422,13 +422,13 @@ end
 
 # Endpoint 2: User-facing page that renders an HTML forecast
 
-get "/weather" do
-  @city = params["city"] || "Copenhagen"
+get '/weather' do
+  @city = params['city'] || 'Copenhagen'
   result = get_weather_data(@city)
 
   if result
-    @current_condition = result[:data]["current_condition"][0]
-    @forecast = result[:data]["weather"]
+    @current_condition = result[:data]['current_condition'][0]
+    @forecast = result[:data]['weather']
     @status   = result[:status] # :fresh eller :stale
     erb :weather
   else
@@ -436,7 +436,6 @@ get "/weather" do
     erb :weather
   end
 end
-
 
 # ----------------------------
 # Security Functions
@@ -446,13 +445,11 @@ def hash_password(password)
   BCrypt::Password.create(password)
 end
 
-
 def verify_password(stored_hash, password)
   BCrypt::Password.new(stored_hash) == password
 rescue BCrypt::Errors::InvalidHash
   false # Håndter tilfælde, hvor hashen er ugyldig
 end
-
 
 # ----------------------------
 # Start server

@@ -123,6 +123,63 @@ helpers do
     return text if words.length <= max_words
     words[0...max_words].join(" ") + "..."
   end
+
+  def perform_search(db, q, language)
+    return [] unless q
+
+    # Simple keyword extraction
+    stop_words = %w[what are the for is a an in on of to and or with by how]
+    keywords = q.downcase.scan(/\w+/).reject { |w| stop_words.include?(w) }
+
+    if keywords.empty?
+      # Fallback to original query if all words were stop words or empty
+      return db.execute(
+        "SELECT * FROM pages WHERE language = ? AND (title LIKE ? OR content LIKE ?)",
+        [language, "%#{q}%", "%#{q}%"]
+      )
+    end
+
+    # Build dynamic query to match ANY of the keywords in Title OR Content
+    conditions = keywords.map { "(title LIKE ? OR content LIKE ?)" }.join(" OR ")
+    sql = "SELECT * FROM pages WHERE language = ? AND (#{conditions})"
+    
+    params_array = [language]
+    keywords.each do |k| 
+      params_array << "%#{k}%"
+      params_array << "%#{k}%"
+    end
+    
+    results = db.execute(sql, params_array)
+
+    # Ranking Logic
+    query_down = q.downcase
+    results.sort_by! do |row|
+      score = 0
+      title_down = row['title'].to_s.downcase
+      content_down = row['content'].to_s.downcase
+
+      # 1. Exact phrase match (Highest priority)
+      score += 100 if title_down.include?(query_down)
+      score += 50 if content_down.include?(query_down)
+
+      # 2. Keyword matches
+      keywords.each do |word|
+        # Title matches are weighted higher
+        if title_down.include?(word)
+          score += 10 
+        end
+        # Content matches
+        if content_down.include?(word)
+          score += 1
+        end
+      end
+      
+      # Sort descending
+      -score
+    end
+
+    results
+  end
 end
 
 # Root endpoint
@@ -134,10 +191,7 @@ get "/" do
   db.results_as_hash = true
 
   if q
-    @search_results = db.execute(
-      "SELECT * FROM pages WHERE language = ? AND content LIKE ?",
-      [language, "%#{q}%"]
-    )
+    @search_results = perform_search(db, q, language)
 
     # Metrics
     SEARCH_COUNTER.increment(labels: { language: language })
@@ -188,10 +242,7 @@ get "/api/search" do
   db.results_as_hash = true
 
   if q
-    @search_results = db.execute(
-      "SELECT * FROM pages WHERE language = ? AND content LIKE ?",
-      [language, "%#{q}%"]
-    )
+    @search_results = perform_search(db, q, language)
 
     # Metrics
     SEARCH_COUNTER.increment(labels: { language: language })

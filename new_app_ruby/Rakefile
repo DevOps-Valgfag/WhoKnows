@@ -181,7 +181,32 @@ task :scrape_sites do
     'https://en.wikipedia.org/wiki/Human%E2%80%93computer_interaction',
     'https://en.wikipedia.org/wiki/AWK',
     'https://en.wikipedia.org/wiki/Delphi_(software)',
-    'https://yorick.github.io/'
+    'https://yorick.github.io/',
+    # Non-code related topics based on user searches
+    'https://en.wikipedia.org/wiki/Aurora', # Northern Lights
+    'https://en.wikipedia.org/wiki/National_Basketball_Association',
+    'https://en.wikipedia.org/wiki/National_Football_League',
+    'https://en.wikipedia.org/wiki/Ultimate_Fighting_Championship', # UFC
+    'https://en.wikipedia.org/wiki/Stock_market',
+    'https://en.wikipedia.org/wiki/401(k)',
+    'https://en.wikipedia.org/wiki/Bitcoin',
+    'https://en.wikipedia.org/wiki/Half-Life_(series)', # Half Life 3
+    'https://en.wikipedia.org/wiki/Call_of_Duty',
+    'https://en.wikipedia.org/wiki/Steam_(service)',
+    'https://en.wikipedia.org/wiki/Taylor_Swift',
+    'https://en.wikipedia.org/wiki/Elon_Musk',
+    'https://en.wikipedia.org/wiki/Government_shutdown',
+    'https://en.wikipedia.org/wiki/Earthquake',
+    'https://en.wikipedia.org/wiki/Power_outage',
+    'https://en.wikipedia.org/wiki/Premier_League', # Soccer
+    'https://en.wikipedia.org/wiki/UEFA_Champions_League',
+    'https://en.wikipedia.org/wiki/Grammy_Awards',
+    'https://en.wikipedia.org/wiki/Black_Friday_(shopping)',
+    'https://en.wikipedia.org/wiki/Mega_Millions',
+    'https://en.wikipedia.org/wiki/Powerball',
+    'https://en.wikipedia.org/wiki/Jeopardy!',
+    'https://en.wikipedia.org/wiki/Yellowstone_(American_TV_series)', # Popular TV
+    'https://en.wikipedia.org/wiki/Stranger_Things'
   ]
 
   # Connect to the database using the constant from app.rb

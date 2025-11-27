@@ -23,9 +23,11 @@ gem "bcrypt", "~> 3.1"
 gem "dotenv", "~> 3.1"
 
 
-# YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem
+# YAML er en del af Ruby stdlib, så den behøves ikke at tilføje som gem
 
 gem 'httparty'
+gem 'nokogiri'
+gem 'rake'
 
 group :test do
   gem 'rspec'

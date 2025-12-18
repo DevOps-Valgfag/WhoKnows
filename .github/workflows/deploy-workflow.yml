@@ -84,9 +84,11 @@ jobs:
 
               echo "Updating and restarting container..."
               cd ~/app/whoknows/new_app_ruby
-              export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+              export SESSION_SECRET='${{ secrets.SESSION_SECRET }}'
+              export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
               docker compose pull
               docker compose up -d --remove-orphans
+
 
               echo "Deployment complete! Running containers:"
               docker compose ps

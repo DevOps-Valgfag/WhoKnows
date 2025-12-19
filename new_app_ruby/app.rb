@@ -104,6 +104,8 @@ end
 
 helpers do
   def truncate_text(text, max_words)
+    return "" if text.nil?
+    
     words = text.split
     return text if words.length <= max_words
     words[0...max_words].join(" ") + "..."

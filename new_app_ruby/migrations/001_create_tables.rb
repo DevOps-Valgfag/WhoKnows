@@ -13,11 +13,15 @@ Sequel.migration do
     end
 
     create_table?(:pages) do
-      primary_key :id
-      String :title,    null: false
-      Text   :content,  null: false
+      primary_key :id                     # <-- autoincrement id i Postgres
+      String :title, null: false
+      String :url, null: false
       String :language, null: false, default: "en"
+      DateTime :last_updated
+      Text :content, null: false
 
+      index :title, unique: true          # beholder unikhed som før
+      index :url, unique: true
       index :language
     end
   end

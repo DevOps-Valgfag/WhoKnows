@@ -104,8 +104,8 @@ end
 
 helpers do
   def truncate_text(text, max_words)
-    return "" if text.nil?
-    
+    return "[no content]" if text.nil? || text.strip.empty?
+
     words = text.split
     return text if words.length <= max_words
     words[0...max_words].join(" ") + "..."
@@ -119,12 +119,12 @@ helpers do
 
     if keywords.empty?
       return db.fetch(
-        "SELECT * FROM pages WHERE language = ? AND (title LIKE ? OR content LIKE ?)",
+        "SELECT * FROM pages WHERE language = ? AND (title ILIKE ? OR content ILIKE ?)",
         language, "%#{q}%", "%#{q}%"
       ).all
     end
 
-    conditions = keywords.map { "(title LIKE ? OR content LIKE ?)" }.join(" OR ")
+    conditions = keywords.map { "(title ILIKE ? OR content ILIKE ?)" }.join(" OR ")
     sql = "SELECT * FROM pages WHERE language = ? AND (#{conditions})"
 
     params = [language]

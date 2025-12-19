@@ -56,7 +56,7 @@ pg.transaction do
         url: p[:url],
         language: p[:language] || "en",
         last_updated: p[:last_updated],
-        content: p[:content]
+        content: (p[:content] || "").strip
       )
     end
   else

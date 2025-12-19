@@ -47,18 +47,18 @@ pg.transaction do
     pages = sqlite[:pages].all
     puts "[import] pages rows: #{pages.size}"
 
-    pg[:pages].delete
+    # ryd først (hurtigt + reset id)
+    pg.run("TRUNCATE TABLE pages RESTART IDENTITY CASCADE")
 
     pages.each do |p|
       pg[:pages].insert(
-        id: p[:id],
         title: p[:title],
-        content: p[:content],
-        language: p[:language] || "en"
+        url: p[:url],
+        language: p[:language] || "en",
+        last_updated: p[:last_updated],
+        content: p[:content]
       )
     end
-
-    pg.run("SELECT setval(pg_get_serial_sequence('pages','id'), (SELECT COALESCE(MAX(id),1) FROM pages))")
   else
     puts "[import] sqlite has no pages table, skipping"
   end

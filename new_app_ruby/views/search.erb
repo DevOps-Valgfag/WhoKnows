@@ -20,8 +20,8 @@
   <% if @search_results && !@search_results.empty? %>
     <% @search_results.each do |result| %>
       <div class="search-result">
-        <h3><a href="<%= result['url'] %>"><%= result['title'] %></a></h3>
-        <p><%= truncate_text(result['content'], 25) %></p>
+        <h3><a href="<%= result[:url] %>"><%= result[:title] %></a></h3>
+        <p><%= truncate_text(result[:content], 25) %></p>
       </div>
     <% end %>
   <% elsif params['q'] %>

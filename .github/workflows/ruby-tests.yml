@@ -8,10 +8,26 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       SESSION_SECRET: "86f7f8e880d3bfc0954041ef2c47363160c38315761ccfd2909dde4fb7669537"
       RACK_ENV: "test"
       TEST_ENV: "true"
+      DATABASE_URL: "postgres://test:test@localhost:5432/test_db"
 
     steps:
       - name: Checkout code
@@ -30,12 +46,8 @@ jobs:
       - name: Prepare test database
         working-directory: new_app_ruby
         run: |
-          # Start clean each run
-          rm -f test.db
-      
-          # Recreate tables exactly like schema
-          sqlite3 test.db "
-            CREATE TABLE pages (
+          PGPASSWORD=test psql -h localhost -U test -d test_db -c "
+            CREATE TABLE IF NOT EXISTS pages (
                 title TEXT PRIMARY KEY UNIQUE,
                 url TEXT NOT NULL UNIQUE,
                 language TEXT NOT NULL CHECK(language IN ('en', 'da')) DEFAULT 'en',
@@ -43,26 +55,25 @@ jobs:
                 content TEXT NOT NULL
             );
           "
-      
-          sqlite3 test.db "
-            CREATE TABLE users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+          PGPASSWORD=test psql -h localhost -U test -d test_db -c "
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
                 username TEXT NOT NULL UNIQUE,
                 email TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
                 must_change_password INTEGER DEFAULT 1
             );
           "
-      
-          # Insert the MATLAB page
-          sqlite3 test.db "
+
+          PGPASSWORD=test psql -h localhost -U test -d test_db -c "
             INSERT INTO pages (title, url, language, last_updated, content) VALUES (
               'MATLAB',
               'http://web.archive.org/web/20090110165251/http://en.wikipedia.org:80/wiki/Matlab',
               'en',
               '2009-01-10 00:00:00',
               'MATLAB is a numerical computing environment and programming language used for matrix computations, algorithm development, data analysis and visualization.'
-            );
+            ) ON CONFLICT (title) DO NOTHING;
           "
 
       - name: Run RSpec tests

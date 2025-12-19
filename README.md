@@ -1,227 +1,139 @@
-# WhoKnows Application 🚀
-
-![Ruby](https://img.shields.io/badge/Ruby-3.0%2B-red?logo=ruby&logoColor=white)
-![Sinatra](https://img.shields.io/badge/Sinatra-2.1%2B-lightgrey?logo=sinatra)
-![SQLite](https://img.shields.io/badge/SQLite3-Required-blue?logo=sqlite)
-![License](https://img.shields.io/badge/License-MIT-green)
-
-## Project Overview
-
-WhoKnows is a Ruby/Sinatra-based web application that provides various features, including user authentication, search functionality, and weather data retrieval. The application is designed to be lightweight, easy to set up, and extensible.
+# WhoKnows
 
 <p align="center">
-  <img src="https://img.shields.io/badge/ruby-%23CC342D.svg?style=for-the-badge&logo=ruby&logoColor=white" alt="Ruby" />
-  <img src="https://img.shields.io/badge/sinatra-%23000.svg?style=for-the-badge&logo=sinatra&logoColor=white" alt="Sinatra" />
-  <img src="https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
-  <img src="https://img.shields.io/badge/YAML-grey?style=for-the-badge&logo=yaml&logoColor=white" alt="YAML" />
-  <img src="https://img.shields.io/badge/json-5E5C5C?style=for-the-badge&logo=json&logoColor=white" alt="JSON" />
-  <img src="https://img.shields.io/badge/dotenv-ECD53F?style=for-the-badge&logo=dotenv&logoColor=black" alt="Dotenv" />
-  <img src="https://img.shields.io/badge/BCrypt-627E99?style=for-the-badge&logo=lock&logoColor=white" alt="BCrypt" />
+  <img src="https://img.shields.io/badge/Ruby-3.2+-CC342D?style=for-the-badge&logo=ruby&logoColor=white" alt="Ruby" />
+  <img src="https://img.shields.io/badge/Sinatra-4.0-000000?style=for-the-badge&logo=sinatra&logoColor=white" alt="Sinatra" />
+  <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-24+-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/nginx-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" />
+  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions" />
+  <img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white" alt="Prometheus" />
+  <img src="https://img.shields.io/badge/RSpec-FF0000?style=for-the-badge&logo=ruby&logoColor=white" alt="RSpec" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/DevOps-Valgfag/app-whoknows/ruby-tests.yml?branch=dev&style=flat-square&label=tests" alt="Tests" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome" />
 </p>
 
 ---
 
-## 📂 Folder Structure
+A Ruby/Sinatra web application featuring search functionality, user authentication, and weather data. Built with DevOps best practices including containerization, CI/CD, and monitoring.
 
-A brief overview of the key directories and files in the project.
+## Quick Start
 
-```
-├── new_app_ruby/       # Main application folder
-│   ├── app.rb          # Main Sinatra application file
-│   ├── views/          # HTML templates for rendering
-│   ├── public/         # Static assets (CSS, JS, images)
-│   ├── db/             # Database-related files
-│   └── .env            # Environment variables
-├── README.md           # Project documentation
-└── open_api.yaml       # OpenAPI specification
-```
+```bash
+# Clone and navigate
+git clone https://github.com/DevOps-Valgfag/app-whoknows.git
+cd app-whoknows/new_app_ruby
 
----
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
 
-## 🛠️ Setting Up the Project Locally
-
-To get the project up and running on your local machine, please follow these steps.
-
-### Prerequisites ✅
-
-Before you begin, ensure you have the following software installed on your system.
-
-1.  **Ruby:** This project requires Ruby. Version 3.0 or higher is recommended. To check your Ruby version, run the following command in your terminal:
-    ```sh
-    ruby -v
-    ```
-    If you don't have Ruby installed, you can download it from the official [Ruby website](https://www.ruby-lang.org/).
-
-2.  **Bundler:** Bundler is a package manager for Ruby. To install it, run:
-    ```sh
-    gem install bundler
-    ```
-
-3.  **SQLite3:** This project uses SQLite3 as its database. You can verify if it's installed by running:
-    ```sh
-    sqlite3 --version
-    ```
-    If it's not installed, you can find installation instructions on the [SQLite website](https://www.sqlite.org/).
-### 🚀 Setup Instructions
-
-1.  **Clone the Repository:**
-    First, clone the project repository to your local machine.
-    ```sh
-    git clone <your-repository-url>
-    cd <project-directory>
-    ```
-
-2.  **Install Dependencies:**
-    Next, install the necessary Ruby gems. To keep the gems local to the project and avoid conflicts with system-wide gems, it is recommended to configure Bundler to install dependencies into the `vendor/bundle` directory.
-
-    Run this command first:
-    ```sh
-    bundle config set --local path 'vendor/bundle'
-    ```
-    Now, install the gems:
-    ```sh
-    bundle install
-    ```
-
-3.  **Download the Database:**
-    This project uses a pre-existing database file. You will need to download the official `whoknows.db` file from the provided external source and place it in the root directory of the project.
-
-4.  **Configure Environment Variables:**
-    The application requires a `SESSION_SECRET` for security. Create a `.env` file in the new_app_ruby folder:
-    ```sh
-    touch .env
-    ```
-    Then, add the following line to the `.env` file:
-    ```env
-    SESSION_SECRET=your_super_secret_key
-    ```
-    You can generate a secure secret key by running the following command in your terminal and copying the output:
-    ```sh
-    ruby -r securerandom -e 'puts SecureRandom.hex(64)'
-    ```
-
-### Running the Application
-
-Once you have completed the setup steps, you can start the application with the following command:
-
-```sh
-bundle exec ruby app.rb
+# Run with Docker
+docker compose up -d
 ```
 
-The application will then be accessible at `http://localhost:8080`.
+Application available at `http://localhost:80`
 
-### Troubleshooting
+## Architecture
 
-If you encounter any issues during the setup process, here are a few things to check:
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Nginx     │────▶│  Sinatra    │────▶│ PostgreSQL  │
+│   :80/:443  │     │    App      │     │    :5432    │
+└─────────────┘     └─────────────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │ Prometheus  │
+                    │  /metrics   │
+                    └─────────────┘
+```
 
-*   **Missing Gems:** If you get an error about a missing gem, double-check that you have run `bundle install` successfully.
-*   **Database Not Found:** Ensure that you have downloaded the `whoknows.db` file and placed it in the correct directory.
-*   **Application Fails to Start:** Verify that your `.env` file is correctly named and that the `SESSION_SECRET` is set.
+## Project Structure
 
----
+```
+WhoKnows/
+├── .github/
+│   └── workflows/          # CI/CD pipelines
+├── new_app_ruby/
+│   ├── app.rb              # Main application
+│   ├── views/              # ERB templates
+│   ├── public/             # Static assets
+│   ├── spec/               # RSpec tests
+│   ├── docker-compose.yml  # Container orchestration
+│   ├── Dockerfile          # App container
+│   ├── TESTING.md          # Testing guide
+│   └── DEPLOYMENT.md       # Deployment guide
+├── CONTRIBUTING.md         # Contribution guidelines
+└── README.md               # You are here
+```
+
 ## API Endpoints
 
-Below is a quick overview of the available API endpoints in the application. For detailed specifications, refer to the [OpenAPI documentation](http://localhost:8080/docs).
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Search page |
+| `GET` | `/api/search?q=` | Search API |
+| `POST` | `/api/login` | User login |
+| `POST` | `/api/register` | User registration |
+| `GET` | `/api/logout` | User logout |
+| `GET` | `/api/weather?city=` | Weather data |
+| `GET` | `/metrics` | Prometheus metrics |
+| `GET` | `/docs` | Swagger UI |
 
-### General Endpoints
+## Documentation
 
-| Method | Endpoint         | Description                          |
-|--------|-------------------|--------------------------------------|
-| GET    | `/`              | Root endpoint. Displays a welcome message. |
-| GET    | `/docs`          | Swagger UI for OpenAPI documentation. |
-| GET    | `/about`         | Displays the "About" page.           |
+| Document | Description |
+|----------|-------------|
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Git flow, conventions, PR process |
+| [TESTING.md](new_app_ruby/TESTING.md) | How to run tests locally |
+| [DEPLOYMENT.md](new_app_ruby/DEPLOYMENT.md) | Docker setup, CI/CD, production |
+| [API Docs](http://localhost:8080/docs) | Interactive Swagger documentation |
 
----
+## Tech Stack
 
-### Authentication Endpoints 🔒
+<table>
+<tr>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=ruby" width="48" height="48" alt="Ruby" />
+<br>Ruby
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=postgres" width="48" height="48" alt="PostgreSQL" />
+<br>PostgreSQL
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=docker" width="48" height="48" alt="Docker" />
+<br>Docker
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=nginx" width="48" height="48" alt="Nginx" />
+<br>Nginx
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=githubactions" width="48" height="48" alt="GitHub Actions" />
+<br>CI/CD
+</td>
+<td align="center" width="96">
+<img src="https://skillicons.dev/icons?i=prometheus" width="48" height="48" alt="Prometheus" />
+<br>Metrics
+</td>
+</tr>
+</table>
 
-| Method | Endpoint         | Description                          |
-|--------|-------------------|--------------------------------------|
-| POST   | `/api/login`     | Logs in a user with username and password. |
-| POST   | `/api/register`  | Registers a new user.                |
-| GET    | `/api/logout`    | Logs out the current user.           |
+## License
 
----
-
-### Search Endpoint 🔍
-
-| Method | Endpoint         | Description                          |
-|--------|-------------------|--------------------------------------|
-| GET    | `/api/search`    | Searches for pages based on a query and language. |
-
----
-
-### Weather Endpoints 🌦️
-
-| Method | Endpoint         | Description                          |
-|--------|-------------------|--------------------------------------|
-| GET    | `/api/weather`   | Returns weather data for a specified city in JSON format. |
-| GET    | `/weather`       | Displays an HTML weather forecast for a specified city. |
-
----
-
-### OpenAPI Specification Endpoints 📜
-
-| Method | Endpoint         | Description                          |
-|--------|-------------------|--------------------------------------|
-| GET    | `/open_api.yaml` | Returns the OpenAPI specification in YAML format. |
-| GET    | `/open_api.json` | Returns the OpenAPI specification in JSON format. |
-
----
-
-### Notes
-- **Authentication**: Some endpoints may require the user to be logged in. Ensure you have a valid session.
-- **Environment Variables**: The application uses a `SESSION_SECRET` for session management. Ensure this is configured in your `.env` file.
-- **Database**: The application relies on an external SQLite database file. Ensure the database is downloaded and placed in the correct directory.
-
-For more details, visit the [Swagger UI](http://localhost:8080/docs).
-
-🐛 Known Issues
-
--   The `/api/weather` endpoint is dependent on an external weather service and may fail if the service is unavailable.
--   The database file must be manually downloaded and placed in the correct directory.
-
-
-
-## Agreed conventions new version of the application - Ruby / Sinatra
-According to https://rubystyle.guide/ 
-
-| Concept/Context | Convention  | Example |
-|-----------------|-------------|---------|
-| Ruby Variables, Symbols and Methods | Snake case | `my_variable`, `some_method` |
-| Do not separate numbers from letters on symbols, methods and variables. | Snake case | `my_variable1`, `some_method2` |
-| Ruby Classes and Modules | Pascal case | `MyClass`, `UserManager` |
-| Files and Directories | Snake case | `hello_world.rb`, `/hello_world/hello_world.rb` |
-| Database Tables/Collections | Plural | `customers`, `orders` |
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-## Agreed branching strategy - Git Flow
-We will work in feature branches, make PR to Dev branch and when the application is ready for deployment, this will be from the Main branch.
 
-Flow and commands in order to avoid irreparable conflicts:
-| Command | Desc.  | 
-|-----------------|-------------|
-| git checkout dev |  |
-| git pull | Make sure your local dev is up to date |
-| git checkout -b featureBranchName | Make a new branch from the updated dev  |
-| git add . | |
-| git commit -m "descriptive message" | Make regular commits with descriptive messages |
-| git checkout dev |  |
-| git pull | Make sure your local dev is up to date |
-| git checkout featureBranchName |  |
-| git merge dev | Merge dev into your feature branch and check if it still can compile* |
-| git push -u origin featureBranchName | pusher din rebased branch til remote, klar til PR |
-
-*If there are any conflicts during merge, solve these in the IDE (then save files, run git add <file> + git commit)
-
-Make PR to dev in GitHub UI.
-
-
-After PR has been reviewed and merged:
-
-git checkout dev
-
-git pull 
-
-Now you can make a new feature branch from the updated dev branch and work on.
+<p align="center">
+  <sub>Built with Ruby and DevOps best practices</sub>
+</p>

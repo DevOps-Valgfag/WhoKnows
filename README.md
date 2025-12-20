@@ -95,7 +95,7 @@ WhoKnows/
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Git flow, conventions, PR process |
 | [TESTING.md](new_app_ruby/TESTING.md) | How to run tests locally |
 | [DEPLOYMENT.md](new_app_ruby/DEPLOYMENT.md) | Docker setup, CI/CD, production |
-| [API Docs](http://localhost:8080/docs) | Interactive Swagger documentation |
+| [API Docs](https://we-know.dk/docs) | Interactive Swagger documentation |
 
 ## Tech Stack
 

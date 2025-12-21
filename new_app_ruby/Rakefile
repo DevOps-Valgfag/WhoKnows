@@ -1,12 +1,16 @@
 require 'nokogiri'
 require 'open-uri'
-require 'sqlite3'
+require 'sequel'
+require 'pg'
+
 
 # Prevent Sinatra from starting the web server when required
 require 'sinatra'
 set :run, false
 
 require './app'
+# DB is provided by app.rb
+
 
 desc "Scrape new sites and add to search engine"
 task :scrape_sites do
@@ -208,45 +212,50 @@ task :scrape_sites do
     'https://en.wikipedia.org/wiki/Yellowstone_(American_TV_series)', # Popular TV
     'https://en.wikipedia.org/wiki/Stranger_Things'
   ]
+  
 
-  # Connect to the database using the constant from app.rb
-  # We use the DB_PATH defined in app.rb to ensure we use the same database
-  puts "Using database at: #{DB_PATH}"
-  db = SQLite3::Database.new(DB_PATH)
-  db.results_as_hash = true
+  MAX_CONTENT_LENGTH = 8_000  # ~8 KB
 
   urls_to_scrape.each do |url|
-    begin
-      puts "Scraping #{url}..."
-      # Open the URL
-      html = URI.open(url)
-      doc = Nokogiri::HTML(html)
+  begin
+    puts "Scraping #{url}..."
 
-      # Extract title
-      title = doc.title || url
+    html = URI.open(url, "User-Agent" => "WhoKnowsBot/1.0 (+https://we-know.dk)")
+    doc = Nokogiri::HTML(html)
 
-      # Extract text from body, removing scripts and styles for cleaner content
-      doc.css('script, style').remove
-      content = doc.at('body')&.text&.strip&.gsub(/\s+/, ' ') || ""
+    title = doc.title || url
 
-      # Check if the page already exists to avoid duplicates
-      existing = db.execute("SELECT url FROM pages WHERE url = ?", url).first
+    doc.css('script, style').remove
+    main = doc.at('main') || doc.at('article') || doc.at('body')
+    content = main&.text&.strip&.gsub(/\s+/, ' ') || ""
+    content = content[0...MAX_CONTENT_LENGTH]
 
-      if existing
-        puts "Updating existing record for #{url}"
-        db.execute("UPDATE pages SET title = ?, content = ?, language = 'en' WHERE url = ?", [title, content, url])
-      else
-        puts "Inserting new record for #{url}"
-        db.execute("INSERT INTO pages (url, title, content, language) VALUES (?, ?, ?, 'en')", [url, title, content])
-      end
+    existing = DB[:pages].where(url: url).first
 
-    rescue OpenURI::HTTPError => e
-      puts "Failed to fetch #{url}: #{e.message}"
-    rescue => e
-      puts "Error processing #{url}: #{e.message}"
+    if existing
+      DB[:pages].where(url: url).update(
+        title: title,
+        content: content,
+        language: 'en',
+        last_updated: Time.now
+      )
+    else
+      DB[:pages].insert(
+        title: title,
+        url: url,
+        content: content,
+        language: 'en',
+        last_updated: Time.now
+      )
     end
-  end
 
-  db.close
-  puts "Scrape complete."
+    sleep 1 
+
+  rescue OpenURI::HTTPError => e
+    puts "Failed to fetch #{url}: #{e.message}"
+  rescue => e
+    puts "Error processing #{url}: #{e.class} - #{e.message}"
+  end
 end
+end
+

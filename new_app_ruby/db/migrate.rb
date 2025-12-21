@@ -1,4 +1,5 @@
 # db/migrate.rb
+require "dotenv/load"
 require "sequel"
 
 db = Sequel.connect(ENV.fetch("DATABASE_URL"))

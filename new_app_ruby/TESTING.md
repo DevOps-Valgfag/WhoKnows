@@ -7,6 +7,7 @@ This guide explains how to run the test suite locally.
 - Ruby 3.2+
 - Bundler
 - Docker (for PostgreSQL)
+- Google Chrome (for E2E browser tests)
 
 ## Setup
 
@@ -63,13 +64,43 @@ bundle exec rspec spec/features/register_spec.rb:4
 
 ## Test Suite Overview
 
+The test suite has two types of tests:
+
+### Fast Tests (rack_test driver)
+These run without a browser and are very fast.
+
 | Test File | Description |
 |-----------|-------------|
 | `spec/features/search_spec.rb` | Tests search functionality |
 | `spec/features/register_spec.rb` | Tests user registration |
-| `spec/helpers/security_spec.rb` | Tests password hashing helpers |
+| `spec/features/auth_spec.rb` | Tests login/logout flows |
+| `spec/unit/security_spec.rb` | Tests password hashing helpers |
+
+### E2E Browser Tests (Selenium + headless Chrome)
+These run in a real headless Chrome browser.
+
+| Test File | Description |
+|-----------|-------------|
+| `spec/e2e/search_e2e_spec.rb` | Browser tests for search |
+| `spec/e2e/auth_e2e_spec.rb` | Browser tests for authentication |
+| `spec/e2e/pages_e2e_spec.rb` | Browser tests for page navigation |
+
+### Running Tests Separately
+
+```bash
+# Run only fast tests (unit + features)
+bundle exec rspec spec/unit spec/features
+
+# Run only E2E browser tests
+bundle exec rspec spec/e2e
+
+# Run all tests
+bundle exec rspec
+```
 
 ## How It Works
+
+### Test Infrastructure
 
 The test suite (`spec/spec_helper.rb`) automatically:
 
@@ -78,6 +109,45 @@ The test suite (`spec/spec_helper.rb`) automatically:
 3. Sets up the database schema (tables)
 4. Seeds test data (MATLAB page for search tests)
 5. Cleans up user data between tests
+
+### E2E Browser Tests
+
+E2E tests use **Capybara with Selenium** and headless Chrome:
+
+- Tests marked with `js: true` run in a real browser
+- Capybara starts a Puma server automatically
+- Chrome runs in headless mode (no visible window)
+- Tests can interact with JavaScript-rendered content
+
+```ruby
+# Example E2E test (runs in browser)
+RSpec.feature 'Search E2E', type: :feature, js: true do
+  scenario 'can search and see results' do
+    visit '/'
+    fill_in 'q', with: 'MATLAB'
+    click_button 'search-button'
+    expect(page).to have_css('.search-result')
+  end
+end
+```
+
+### Fast Feature Tests
+
+Feature tests without `js: true` use rack_test driver:
+
+- No real browser needed
+- Much faster execution
+- Cannot test JavaScript functionality
+
+```ruby
+# Example fast test (no browser)
+RSpec.feature 'Search', type: :feature do
+  scenario 'searching shows results' do
+    visit '/?q=MATLAB&language=en'
+    expect(page).to have_css('.search-result')
+  end
+end
+```
 
 ## Troubleshooting
 
@@ -102,4 +172,14 @@ docker rm whoknows-postgres-test
 
 ## CI/CD
 
-Tests run automatically on GitHub Actions when pushing to `dev`, `main`, or `feature/testing-setup` branches. The CI workflow uses its own PostgreSQL service container.
+Tests run automatically on GitHub Actions when pushing to `dev` or `main` branches.
+
+The workflow (`.github/workflows/ruby-tests.yml`):
+
+1. Sets up PostgreSQL service container
+2. Installs Ruby and dependencies
+3. Installs Chrome for E2E tests
+4. Runs unit and feature tests
+5. Runs E2E browser tests
+
+Both test types must pass for the workflow to succeed.

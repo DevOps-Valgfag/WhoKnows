@@ -43,6 +43,11 @@ jobs:
         working-directory: new_app_ruby
         run: bundle install
 
+      - name: Install Chrome for E2E tests
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
       - name: Prepare test database
         working-directory: new_app_ruby
         run: |
@@ -76,6 +81,10 @@ jobs:
             ) ON CONFLICT (title) DO NOTHING;
           "
 
-      - name: Run RSpec tests
+      - name: Run unit and feature tests
         working-directory: new_app_ruby
-        run: bundle exec rspec
+        run: bundle exec rspec spec/unit spec/features --format documentation
+
+      - name: Run E2E browser tests
+        working-directory: new_app_ruby
+        run: bundle exec rspec spec/e2e --format documentation

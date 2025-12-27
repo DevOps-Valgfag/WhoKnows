@@ -8,6 +8,7 @@ Dotenv.load('.env.test')
 require 'rspec'
 require 'rack/test'
 require 'capybara/rspec'
+require 'selenium-webdriver'
 require 'sequel'
 require 'pg'
 
@@ -88,7 +89,18 @@ Capybara.app = Sinatra::Application
 # Default: no real browser, just fast rack_test
 Capybara.default_driver = :rack_test
 
-# If you later want JS tests with a real browser:
+# Register headless Chrome for E2E browser tests
+Capybara.register_driver :selenium_chrome_headless do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument('--headless=new')
+  options.add_argument('--no-sandbox')
+  options.add_argument('--disable-dev-shm-usage')
+  options.add_argument('--disable-gpu')
+  options.add_argument('--window-size=1920,1080')
+
+  Capybara::Selenium::Driver.new(app, browser: :chrome, options: options)
+end
+
 Capybara.javascript_driver = :selenium_chrome_headless
 
 RSpec.configure do |config|

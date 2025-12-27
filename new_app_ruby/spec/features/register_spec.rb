@@ -20,13 +20,10 @@ RSpec.feature 'User registration', type: :feature do
     # The search button is an icon-only submit button → match ID
     expect(page).to have_css('#search-button')
 
-    # Validate DB record
-    db = connect_db
-    db.results_as_hash = true
-    user = db.execute("SELECT * FROM users WHERE username = ?", [username]).first
-    db.close
+    # Validate DB record using Sequel's DB constant
+    user = DB[:users].where(username: username).first
 
     expect(user).not_to be_nil
-    expect(user['email']).to eq(email)
+    expect(user[:email]).to eq(email)
   end
 end

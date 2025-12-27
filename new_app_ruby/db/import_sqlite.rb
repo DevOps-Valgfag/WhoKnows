@@ -1,4 +1,5 @@
 # db/import_sqlite.rb
+require "dotenv/load"
 require "sequel"
 require "sqlite3"
 

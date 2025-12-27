@@ -11,6 +11,7 @@ RUN bundle config set without 'development test' && \
     bundle install --jobs 4 --retry 3
 
 COPY app.rb ./
+COPY Rakefile ./
 COPY public ./public
 COPY views ./views
 COPY open_api.yaml ./

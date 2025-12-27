@@ -7,6 +7,7 @@ require "sinatra/flash"
 require "dotenv/load"
 require "httparty"
 require "time"
+require "timeout"
 
 require "sequel"
 require "pg"
@@ -430,28 +431,42 @@ end
 
 get "/api/weather" do
   city = params["city"] || "Copenhagen"
-  result = get_weather_data(city)
 
-  if result
-    content_type :json
-    json(city: city, data: result[:data], status: result[:status])
-  else
-    status 502
-    json(error: "Couldn't fetch weather data for: #{city}")
+  begin
+    result = Timeout.timeout(5) { get_weather_data(city) }
+
+    if result
+      content_type :json
+      json(city: city, data: result[:data], status: result[:status])
+    else
+      status 502
+      json(error: "Couldn't fetch weather data for: #{city}")
+    end
+  rescue Timeout::Error
+    warn "[weather] timeout for #{city}"
+    status 504
+    json(error: "Couldn't get weather data - request timed out")
   end
 end
 
 get "/weather" do
   @city = params["city"] || "Copenhagen"
-  result = get_weather_data(@city)
 
-  if result
-    @current_condition = result[:data]["current_condition"][0]
-    @forecast = result[:data]["weather"]
-    @status = result[:status]
-    erb :weather
-  else
-    @error = "Kunne ikke hente vejrdata for #{@city}"
+  begin
+    result = Timeout.timeout(8) { get_weather_data(@city) }
+
+    if result
+      @current_condition = result[:data]["current_condition"][0]
+      @forecast = result[:data]["weather"]
+      @status = result[:status]
+      erb :weather
+    else
+      @error = "Kunne ikke hente vejrdata for #{@city}"
+      erb :weather
+    end
+  rescue Timeout::Error
+    warn "[weather] timeout for #{@city}"
+    @error = "Kunne ikke hente vejrdata - anmodningen tog for lang tid"
     erb :weather
   end
 end

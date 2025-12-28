@@ -32,7 +32,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=sha
+            type=sha,format=long
             type=raw,value=latest
 
       - name: Set up Docker Buildx

@@ -7,7 +7,6 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/devops-valgfag/app-whoknows
-  CONTAINER_NAME: app-whoknows
   
 
 jobs:
@@ -25,7 +24,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PULL_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Extract metadata (tags, labels)
         id: meta

@@ -2,7 +2,8 @@ name: Ruby tests (RSpec)
 
 on:
   push:
-    branches: [ dev, main, "feature/testing-setup" ]
+    branches: [ dev, "featureWorkflowKorrektur" ]
+  pull_request:
 
 jobs:
   test:
@@ -12,9 +13,9 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: test_db
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
         ports:
           - 5432:5432
         options: >-
@@ -24,10 +25,10 @@ jobs:
           --health-retries 5
 
     env:
-      SESSION_SECRET: "86f7f8e880d3bfc0954041ef2c47363160c38315761ccfd2909dde4fb7669537"
       RACK_ENV: "test"
       TEST_ENV: "true"
-      DATABASE_URL: "postgres://test:test@localhost:5432/test_db"
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      DATABASE_URL: postgres://${{ secrets.DB_USER}}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME}}
 
     steps:
       - name: Checkout code
@@ -38,6 +39,7 @@ jobs:
         with:
           ruby-version: '3.2'
           bundler-cache: true
+          working-directory: new_app_ruby
 
       - name: Install dependencies
         working-directory: new_app_ruby
@@ -47,39 +49,6 @@ jobs:
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
-
-      - name: Prepare test database
-        working-directory: new_app_ruby
-        run: |
-          PGPASSWORD=test psql -h localhost -U test -d test_db -c "
-            CREATE TABLE IF NOT EXISTS pages (
-                title TEXT PRIMARY KEY UNIQUE,
-                url TEXT NOT NULL UNIQUE,
-                language TEXT NOT NULL CHECK(language IN ('en', 'da')) DEFAULT 'en',
-                last_updated TIMESTAMP,
-                content TEXT NOT NULL
-            );
-          "
-
-          PGPASSWORD=test psql -h localhost -U test -d test_db -c "
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username TEXT NOT NULL UNIQUE,
-                email TEXT NOT NULL UNIQUE,
-                password TEXT NOT NULL,
-                must_change_password INTEGER DEFAULT 1
-            );
-          "
-
-          PGPASSWORD=test psql -h localhost -U test -d test_db -c "
-            INSERT INTO pages (title, url, language, last_updated, content) VALUES (
-              'MATLAB',
-              'http://web.archive.org/web/20090110165251/http://en.wikipedia.org:80/wiki/Matlab',
-              'en',
-              '2009-01-10 00:00:00',
-              'MATLAB is a numerical computing environment and programming language used for matrix computations, algorithm development, data analysis and visualization.'
-            ) ON CONFLICT (title) DO NOTHING;
-          "
 
       - name: Run unit and feature tests
         working-directory: new_app_ruby

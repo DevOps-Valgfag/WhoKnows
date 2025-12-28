@@ -24,7 +24,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{secrets.GHCR_TOKEN}}
 
       - name: Extract metadata (tags, labels)
         id: meta
@@ -76,7 +76,7 @@ jobs:
             ${{ secrets.AZURE_USER }}@${{ secrets.AZURE_HOST }} << 'EOF'
               set -e
               echo "Logging in to GHCR..."
-              docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
+              docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_TOKEN }}'
 
               echo "Cleaning up old containers..."
               docker compose -f ~/app/whoknows/new_app_ruby/docker-compose.yml down || true

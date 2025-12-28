@@ -19,7 +19,7 @@ services:
 
   app:
     container_name: app-whoknows
-    image: ghcr.io/devops-valgfag/app-whoknows:latest
+    image: ghcr.io/devops-valgfag/app-whoknows:${IMAGE_TAG}
     restart: unless-stopped
     depends_on:
       db:

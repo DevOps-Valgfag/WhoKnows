@@ -25,7 +25,7 @@ jobs:
       RACK_ENV: "test"
       TEST_ENV: "true"
       SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      DATABASE_URL: postgres://${{ secrets.DB_USER}}:${{ secrets.DB_PASSWORD }}@postgres:5432/${{ secrets.DB_NAME}}
+      DATABASE_URL: postgres://${{ secrets.DB_USER}}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME}}
 
     steps:
       - name: Checkout code

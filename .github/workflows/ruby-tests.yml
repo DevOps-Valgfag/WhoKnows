@@ -49,9 +49,6 @@ jobs:
         with:
           chrome-version: stable
 
-      - name: Wait for PostgreSQL
-        run:  sleep 3
-
       - name: Run unit and feature tests
         working-directory: new_app_ruby
         run: bundle exec rspec spec/unit spec/features --format documentation

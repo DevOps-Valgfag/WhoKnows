@@ -79,16 +79,13 @@ jobs:
               -u "${{ github.actor }}" \
               --password-stdin
 
-              echo "Deploying image with SHA tag..."
-              export IMAGE_TAG=sha-${{ github.sha }}
-
-              echo "Cleaning up old containers..."
-              docker compose -f ~/app/whoknows/new_app_ruby/docker-compose.yml down || true
-
-              echo "Updating and restarting container..."
               cd ~/app/whoknows/new_app_ruby
+
+              export IMAGE_TAG=sha-${{ github.sha }}
               export SESSION_SECRET='${{ secrets.SESSION_SECRET }}'
               export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
+
+              docker compose down || true
               docker compose pull
               docker compose up -d --remove-orphans
 

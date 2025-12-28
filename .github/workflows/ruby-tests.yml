@@ -16,7 +16,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
           POSTGRES_DB: ${{ secrets.DB_NAME }}
         options: >-
-          --health-cmd "pg_isready -U $POSTGRES_USER"
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -46,6 +46,9 @@ jobs:
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
+
+      - name: Wait for PostgreSQL
+        run:  sleep 3
 
       - name: Run unit and feature tests
         working-directory: new_app_ruby

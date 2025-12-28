@@ -79,6 +79,9 @@ jobs:
               -u "${{ github.actor }}" \
               --password-stdin
 
+              echo "Deploying image with SHA tag..."
+              export IMAGE_TAG=sha-${{ github.sha }}
+
               echo "Cleaning up old containers..."
               docker compose -f ~/app/whoknows/new_app_ruby/docker-compose.yml down || true
 

@@ -136,7 +136,7 @@ Configure these in GitHub repository settings:
 
 | Secret | Description |
 |--------|-------------|
-| `GHCR_PULL_TOKEN` | GitHub token for container registry |
+| `GHCR_TOKEN` | GitHub token for container registry |
 | `AZURE_SSH_PRIVATE_KEY` | SSH key for Azure VM |
 | `AZURE_HOST` | Azure VM hostname/IP |
 | `AZURE_USER` | SSH username |

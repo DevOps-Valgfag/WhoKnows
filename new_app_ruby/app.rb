@@ -1,26 +1,26 @@
-require "sinatra"
-require "sinatra/json"
-require "yaml"
-require "json"
-require "bcrypt"
-require "sinatra/flash"
-require "dotenv/load"
-require "httparty"
-require "time"
-require "timeout"
+require 'sinatra'
+require 'sinatra/json'
+require 'yaml'
+require 'json'
+require 'bcrypt'
+require 'sinatra/flash'
+require 'dotenv/load'
+require 'httparty'
+require 'time'
+require 'timeout'
 
-require "sequel"
-require "pg"
+require 'sequel'
+require 'pg'
 
-require "prometheus/client"
-require "prometheus/client/formats/text"
+require 'prometheus/client'
+require 'prometheus/client/formats/text'
 
 # ----------------------------
 # DB (Postgres via DATABASE_URL)
 # ----------------------------
 DB = Sequel.connect(
-  ENV.fetch("DATABASE_URL"),
-  max_connections: Integer(ENV.fetch("DB_POOL", "10")),
+  ENV.fetch('DATABASE_URL'),
+  max_connections: Integer(ENV.fetch('DB_POOL', '10')),
   test: true
 )
 
@@ -31,21 +31,21 @@ PROM_REGISTRY = Prometheus::Client.registry
 
 SEARCH_COUNTER = Prometheus::Client::Counter.new(
   :whoknows_search_total,
-  docstring: "Total number of searches",
+  docstring: 'Total number of searches',
   labels: [:language]
 )
 SEARCH_MATCH_COUNTER = Prometheus::Client::Counter.new(
   :whoknows_search_with_match_total,
-  docstring: "Number of searches with at least one match",
+  docstring: 'Number of searches with at least one match',
   labels: [:language]
 )
 USER_REGISTERED = Prometheus::Client::Counter.new(
   :whoknows_registered_users_total,
-  docstring: "Total number of registered users"
+  docstring: 'Total number of registered users'
 )
 USER_LOGGED_IN = Prometheus::Client::Counter.new(
   :whoknows_login_total,
-  docstring: "Total number of successful logins"
+  docstring: 'Total number of successful logins'
 )
 
 PROM_REGISTRY.register(SEARCH_COUNTER)
@@ -56,30 +56,30 @@ PROM_REGISTRY.register(USER_LOGGED_IN)
 configure do
   set :trust_proxy, true
   enable :sessions
-  set :session_secret, ENV.fetch("SESSION_SECRET")
+  set :session_secret, ENV.fetch('SESSION_SECRET')
   register Sinatra::Flash
 end
 
 set :port, 8080
-set :bind, "0.0.0.0"
+set :bind, '0.0.0.0'
 
 # ----------------------------
 # Load OpenAPI spec
 # ----------------------------
-SPEC_FILE = File.expand_path("open_api.yaml", __dir__)
+SPEC_FILE = File.expand_path('open_api.yaml', __dir__)
 OPENAPI_SPEC = YAML.load_file(SPEC_FILE)
 
-get "/open_api.yaml" do
-  content_type "application/yaml"
+get '/open_api.yaml' do
+  content_type 'application/yaml'
   File.read(SPEC_FILE)
 end
 
-get "/open_api.json" do
+get '/open_api.json' do
   content_type :json
   JSON.pretty_generate(OPENAPI_SPEC)
 end
 
-get "/docs" do
+get '/docs' do
   <<-HTML
   <!DOCTYPE html>
   <html>
@@ -105,11 +105,12 @@ end
 
 helpers do
   def truncate_text(text, max_words)
-    return "[no content]" if text.nil? || text.strip.empty?
+    return '[no content]' if text.nil? || text.strip.empty?
 
     words = text.split
     return text if words.length <= max_words
-    words[0...max_words].join(" ") + "..."
+
+    words[0...max_words].join(' ') + '...'
   end
 
   def perform_search(db, q, language)
@@ -120,12 +121,12 @@ helpers do
 
     if keywords.empty?
       return db.fetch(
-        "SELECT * FROM pages WHERE language = ? AND (title ILIKE ? OR content ILIKE ?)",
+        'SELECT * FROM pages WHERE language = ? AND (title ILIKE ? OR content ILIKE ?)',
         language, "%#{q}%", "%#{q}%"
       ).all
     end
 
-    conditions = keywords.map { "(title ILIKE ? OR content ILIKE ?)" }.join(" OR ")
+    conditions = keywords.map { '(title ILIKE ? OR content ILIKE ?)' }.join(' OR ')
     sql = "SELECT * FROM pages WHERE language = ? AND (#{conditions})"
 
     params = [language]
@@ -161,23 +162,23 @@ end
 # Request lifecycle
 # ----------------------------
 before do
-  env["g"] ||= {}
-  env["g"]["db"] = DB
+  env['g'] ||= {}
+  env['g']['db'] = DB
 
   if session[:user_id]
-    user = DB.fetch("SELECT * FROM users WHERE id = ?", session[:user_id]).first
-    env["g"]["user"] = user
+    user = DB.fetch('SELECT * FROM users WHERE id = ?', session[:user_id]).first
+    env['g']['user'] = user
   else
-    env["g"]["user"] = nil
+    env['g']['user'] = nil
   end
 end
 
 # ----------------------------
 # Root + Search
 # ----------------------------
-get "/" do
-  q = params["q"]
-  language = params["language"] || "en"
+get '/' do
+  q = params['q']
+  language = params['language'] || 'en'
 
   if q
     @search_results = perform_search(DB, q, language)
@@ -190,9 +191,9 @@ get "/" do
   erb :search
 end
 
-get "/api/search" do
-  q = params["q"]
-  language = params["language"] || "en"
+get '/api/search' do
+  q = params['q']
+  language = params['language'] || 'en'
 
   if q
     @search_results = perform_search(DB, q, language)
@@ -208,25 +209,25 @@ end
 # ----------------------------
 # Auth
 # ----------------------------
-post "/api/login" do
-  username = params["username"]
-  password = params["password"]
+post '/api/login' do
+  username = params['username']
+  password = params['password']
 
-  user = DB.fetch("SELECT * FROM users WHERE username = ?", username).first
+  user = DB.fetch('SELECT * FROM users WHERE username = ?', username).first
 
   error = nil
   if user.nil?
-    error = "Invalid username"
+    error = 'Invalid username'
   elsif !verify_password(user[:password], password)
-    error = "Invalid password"
+    error = 'Invalid password'
   else
     session[:user_id] = user[:id]
     USER_LOGGED_IN.increment
 
     if user[:must_change_password].to_i == 1
-      redirect "/change_password"
+      redirect '/change_password'
     else
-      redirect "api/search?q="
+      redirect 'api/search?q='
     end
   end
 
@@ -236,45 +237,45 @@ post "/api/login" do
   end
 end
 
-post "/change_password" do
-  unless env["g"]["user"]
-    flash[:error] = "Session expired. Please log in again."
-    redirect "/login"
+post '/change_password' do
+  unless env['g']['user']
+    flash[:error] = 'Session expired. Please log in again.'
+    redirect '/login'
   end
 
-  new_pw  = params["new_password"]
-  new_pw2 = params["new_password2"]
+  new_pw  = params['new_password']
+  new_pw2 = params['new_password2']
 
   if new_pw.to_s.empty? || new_pw != new_pw2
-    flash[:error] = "Passwords must match and not be empty"
-    redirect "/change_password"
+    flash[:error] = 'Passwords must match and not be empty'
+    redirect '/change_password'
   else
     begin
       hashed = BCrypt::Password.create(new_pw)
       DB.fetch(
-        "UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?",
-        hashed, env["g"]["user"][:id]
+        'UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?',
+        hashed, env['g']['user'][:id]
       ).all
 
-      flash[:success] = "Password updated successfully!"
-      redirect "/api/search?q="
-    rescue => e
+      flash[:success] = 'Password updated successfully!'
+      redirect '/api/search?q='
+    rescue StandardError => e
       warn "[change_password] ERROR: #{e.class} - #{e.message}"
       flash[:error] = "An unexpected error occurred: #{e.message}"
-      redirect "/change_password"
+      redirect '/change_password'
     end
   end
 end
 
-post "/api/register" do
+post '/api/register' do
   request.body.rewind
   raw_body = request.body.read
 
   content_type_hdr = request.media_type || request.content_type
-  is_json_ct = content_type_hdr && content_type_hdr.downcase.include?("application/json")
+  is_json_ct = content_type_hdr && content_type_hdr.downcase.include?('application/json')
 
   first_char = raw_body.lstrip[0]
-  looks_like_json = !raw_body.to_s.strip.empty? && ["{", "["].include?(first_char)
+  looks_like_json = !raw_body.to_s.strip.empty? && ['{', '['].include?(first_char)
 
   if (is_json_ct || looks_like_json) && !raw_body.to_s.strip.empty?
     begin
@@ -282,34 +283,34 @@ post "/api/register" do
       params.merge!(data)
       warn "[REGISTER] Parsed JSON body: #{data.inspect}"
     rescue JSON::ParserError
-      halt 400, "Invalid JSON payload"
+      halt 400, 'Invalid JSON payload'
     end
   end
 
-  username  = params["username"]
-  email     = params["email"]
-  password  = params["password"]
-  password2 = params["password2"]
+  username  = params['username']
+  email     = params['email']
+  password  = params['password']
+  password2 = params['password2']
 
   warn "[REGISTER] Incoming params: #{params.inspect}"
 
   error = nil
   if username.to_s.empty?
-    error = "You have to enter a username"
-  elsif email.to_s.empty? || !email.include?("@")
-    error = "You have to enter a valid email address"
+    error = 'You have to enter a username'
+  elsif email.to_s.empty? || !email.include?('@')
+    error = 'You have to enter a valid email address'
   elsif password.to_s.empty?
-    error = "You have to enter a password"
+    error = 'You have to enter a password'
   elsif password != password2
-    error = "The two passwords do not match"
+    error = 'The two passwords do not match'
   else
-    user_exists  = DB.fetch("SELECT 1 FROM users WHERE username = ? LIMIT 1", username).first
-    email_exists = DB.fetch("SELECT 1 FROM users WHERE email = ? LIMIT 1", email).first
+    user_exists  = DB.fetch('SELECT 1 FROM users WHERE username = ? LIMIT 1', username).first
+    email_exists = DB.fetch('SELECT 1 FROM users WHERE email = ? LIMIT 1', email).first
 
     if user_exists
-      error = "The username is already taken"
+      error = 'The username is already taken'
     elsif email_exists
-      error = "The email is already registered"
+      error = 'The email is already registered'
     end
   end
 
@@ -320,7 +321,7 @@ post "/api/register" do
       return json(success: false, error: error)
     else
       flash[:error] = error
-      redirect "/register"
+      redirect '/register'
     end
   else
     begin
@@ -337,53 +338,53 @@ post "/api/register" do
       session[:user_id] = new_user_id
 
       warn "[REGISTER] Created user #{username} (ID=#{new_user_id})"
-      redirect "/"
-    rescue => e
+      redirect '/'
+    rescue StandardError => e
       warn "[REGISTER] ERROR: #{e.class} - #{e.message}"
       flash[:error] = "Could not register user: #{e.message}"
-      redirect "/register"
+      redirect '/register'
     end
   end
 end
 
-get "/api/logout" do
+get '/api/logout' do
   session.clear
-  flash[:info] = "Thank you for now. Log in again to continue searching and get the most out of the application."
-  redirect "/login"
+  flash[:info] = 'Thank you for now. Log in again to continue searching and get the most out of the application.'
+  redirect '/login'
 end
 
 # ----------------------------
 # Pages
 # ----------------------------
-get "/about" do
+get '/about' do
   erb :about
 end
 
-get "/login" do
+get '/login' do
   erb :login
 end
 
-get "/change_password" do
-  redirect "/login" unless env["g"]["user"]
+get '/change_password' do
+  redirect '/login' unless env['g']['user']
   erb :change_password
 end
 
-get "/register" do
+get '/register' do
   erb :register
 end
 
-get "/debug/headers" do
-  content_type "text/html"
-  env.select { |k, _| k.start_with?("HTTP_") }
+get '/debug/headers' do
+  content_type 'text/html'
+  env.select { |k, _| k.start_with?('HTTP_') }
      .map { |k, v| "#{k}: #{v}" }
-     .join("<br>")
+     .join('<br>')
 end
 
 # ----------------------------
 # /metrics
 # ----------------------------
-get "/metrics" do
-  content_type "text/plain"
+get '/metrics' do
+  content_type 'text/plain'
   Prometheus::Client::Formats::Text.marshal(PROM_REGISTRY)
 end
 
@@ -392,7 +393,7 @@ end
 # ----------------------------
 CACHE = { weather: {}, expires_at: {}, stale_until: {} }
 
-def get_weather_data(city, ttl: 300, stale_until: 36000)
+def get_weather_data(city, ttl: 300, stale_until: 36_000)
   now = Time.now
   city_key = city.downcase
 
@@ -413,11 +414,12 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
       CACHE[:expires_at][city_key] = now + ttl
       CACHE[:stale_until][city_key] = now + stale_until
 
-      return { data: data, status: :fresh }
+      { data: data, status: :fresh }
     else
       if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
         return { data: CACHE[:weather][city_key], status: :stale }
       end
+
       nil
     end
   rescue StandardError => e
@@ -425,12 +427,13 @@ def get_weather_data(city, ttl: 300, stale_until: 36000)
     if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
       return { data: CACHE[:weather][city_key], status: :stale }
     end
+
     nil
   end
 end
 
-get "/api/weather" do
-  city = params["city"] || "Copenhagen"
+get '/api/weather' do
+  city = params['city'] || 'Copenhagen'
 
   begin
     result = Timeout.timeout(5) { get_weather_data(city) }
@@ -449,15 +452,15 @@ get "/api/weather" do
   end
 end
 
-get "/weather" do
-  @city = params["city"] || "Copenhagen"
+get '/weather' do
+  @city = params['city'] || 'Copenhagen'
 
   begin
     result = Timeout.timeout(8) { get_weather_data(@city) }
 
     if result
-      @current_condition = result[:data]["current_condition"][0]
-      @forecast = result[:data]["weather"]
+      @current_condition = result[:data]['current_condition'][0]
+      @forecast = result[:data]['weather']
       @status = result[:status]
       erb :weather
     else
@@ -466,7 +469,7 @@ get "/weather" do
     end
   rescue Timeout::Error
     warn "[weather] timeout for #{@city}"
-    @error = "Kunne ikke hente vejrdata - anmodningen tog for lang tid"
+    @error = 'Kunne ikke hente vejrdata - anmodningen tog for lang tid'
     erb :weather
   end
 end

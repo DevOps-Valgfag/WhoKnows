@@ -1,11 +1,11 @@
 # db/migrate.rb
-require "dotenv/load"
-require "sequel"
+require 'dotenv/load'
+require 'sequel'
 
-db = Sequel.connect(ENV.fetch("DATABASE_URL"))
+db = Sequel.connect(ENV.fetch('DATABASE_URL'))
 Sequel.extension :migration
 
-migrations_dir = File.expand_path("../migrations", __dir__)
+migrations_dir = File.expand_path('../migrations', __dir__)
 Sequel::Migrator.run(db, migrations_dir)
 
-puts "[db] migrations OK"
+puts '[db] migrations OK'

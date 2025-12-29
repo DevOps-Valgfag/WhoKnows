@@ -1,10 +1,10 @@
 # db/import_sqlite.rb
-require "dotenv/load"
-require "sequel"
-require "sqlite3"
+require 'dotenv/load'
+require 'sequel'
+require 'sqlite3'
 
-sqlite_path = ENV.fetch("SQLITE_PATH", "/import/whoknows.db")
-pg_url      = ENV.fetch("DATABASE_URL")
+sqlite_path = ENV.fetch('SQLITE_PATH', '/import/whoknows.db')
+pg_url      = ENV.fetch('DATABASE_URL')
 
 puts "[import] reading sqlite from: #{sqlite_path}"
 puts "[import] writing to postgres: #{pg_url}"
@@ -15,7 +15,7 @@ pg     = Sequel.connect(pg_url)
 
 # Ensure tables exist (migrations should have run already)
 unless pg.table_exists?(:users) && pg.table_exists?(:pages)
-  abort "[import] postgres tables missing. Run migrations first."
+  abort '[import] postgres tables missing. Run migrations first.'
 end
 
 pg.transaction do
@@ -40,7 +40,7 @@ pg.transaction do
     # reset sequence so next insert gets correct id
     pg.run("SELECT setval(pg_get_serial_sequence('users','id'), (SELECT COALESCE(MAX(id),1) FROM users))")
   else
-    puts "[import] sqlite has no users table, skipping"
+    puts '[import] sqlite has no users table, skipping'
   end
 
   # PAGES
@@ -49,20 +49,20 @@ pg.transaction do
     puts "[import] pages rows: #{pages.size}"
 
     # ryd først (hurtigt + reset id)
-    pg.run("TRUNCATE TABLE pages RESTART IDENTITY CASCADE")
+    pg.run('TRUNCATE TABLE pages RESTART IDENTITY CASCADE')
 
     pages.each do |p|
       pg[:pages].insert(
         title: p[:title],
         url: p[:url],
-        language: p[:language] || "en",
+        language: p[:language] || 'en',
         last_updated: p[:last_updated],
-        content: (p[:content] || "").strip
+        content: (p[:content] || '').strip
       )
     end
   else
-    puts "[import] sqlite has no pages table, skipping"
+    puts '[import] sqlite has no pages table, skipping'
   end
 end
 
-puts "[import] DONE"
+puts '[import] DONE'

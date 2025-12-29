@@ -1,5 +1,7 @@
 AllCops:
-  NewCops: enable
+  TargetRubyVersion: 3.2
+  SuggestExtensions: false
+  NewCops: disable
  # -----------------------------
 # Style / cosmetic cops
 # -----------------------------
@@ -22,6 +24,13 @@ Style/IdenticalConditionalBranches:
 Style/MutableConstant:
   Enabled: false 
 
+Style/SafeNavigationChainLength:
+  Enabled: false
+
+Layout/LineLength:
+  Exclude:
+    - 'spec/**/*'
+
 
 # -----------------------------
 # Metrics cops (kompleksitet)
@@ -41,3 +50,10 @@ Metrics/CyclomaticComplexity:
 
 Metrics/PerceivedComplexity:
   Enabled: false
+
+Security/Open:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
+

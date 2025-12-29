@@ -16,7 +16,7 @@ Sequel.migration do
       primary_key :id                     # <-- autoincrement id i Postgres
       String :title, null: false
       String :url, null: false
-      String :language, null: false, default: "en"
+      String :language, null: false, default: 'en'
       DateTime :last_updated
       Text :content, null: false
 

@@ -3,7 +3,6 @@ require 'open-uri'
 require 'sequel'
 require 'pg'
 
-
 # Prevent Sinatra from starting the web server when required
 require 'sinatra'
 set :run, false
@@ -11,10 +10,11 @@ set :run, false
 require './app'
 # DB is provided by app.rb
 
+MAX_CONTENT_LENGTH = 8_000 # ~8 KB
 
-desc "Scrape new sites and add to search engine"
+desc 'Scrape new sites and add to search engine'
 task :scrape_sites do
-  puts "Starting scrape..."
+  puts 'Starting scrape...'
 
   # List of URLs to scrape based on user search trends
   urls_to_scrape = [
@@ -212,22 +212,18 @@ task :scrape_sites do
     'https://en.wikipedia.org/wiki/Yellowstone_(American_TV_series)', # Popular TV
     'https://en.wikipedia.org/wiki/Stranger_Things'
   ]
-  
-
-  MAX_CONTENT_LENGTH = 8_000  # ~8 KB
 
   urls_to_scrape.each do |url|
-  begin
     puts "Scraping #{url}..."
 
-    html = URI.open(url, "User-Agent" => "WhoKnowsBot/1.0 (+https://we-know.dk)")
+    html = URI.open(url, 'User-Agent' => 'WhoKnowsBot/1.0 (+https://we-know.dk)')
     doc = Nokogiri::HTML(html)
 
     title = doc.title || url
 
     doc.css('script, style').remove
     main = doc.at('main') || doc.at('article') || doc.at('body')
-    content = main&.text&.strip&.gsub(/\s+/, ' ') || ""
+    content = main&.text&.strip&.gsub(/\s+/, ' ') || ''
     content = content[0...MAX_CONTENT_LENGTH]
 
     existing = DB[:pages].where(url: url).first
@@ -249,13 +245,10 @@ task :scrape_sites do
       )
     end
 
-    sleep 1 
-
+    sleep 1
   rescue OpenURI::HTTPError => e
     puts "Failed to fetch #{url}: #{e.message}"
-  rescue => e
+  rescue StandardError => e
     puts "Error processing #{url}: #{e.class} - #{e.message}"
   end
 end
-end
-

@@ -24,7 +24,6 @@ gem "bcrypt", "~> 3.1"
 # In order to use secrets from .env file
 gem "dotenv", "~> 3.1"
 
-
 # YAML er en del af Ruby stdlib, så den behøves ikke at tilføje som gem
 
 gem 'httparty'
@@ -38,3 +37,12 @@ group :test do
 end
 # Prometheus til monitorering  
 gem "prometheus-client"
+# Gemfile
+source 'https://rubygems.org'
+
+group :development, :test do
+  gem 'rubocop', require: false
+  gem 'rubocop-minitest', require: false
+  gem 'rubocop-performance', require: false
+  gem 'rubocop-rake', require: false
+end

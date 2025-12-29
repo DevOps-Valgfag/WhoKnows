@@ -1,10 +1,8 @@
 name: RuboCop Lint
 
 on:
-  push:
   pull_request:
-    branches: featureLinterMMH
-
+    branches: dev
 jobs:
   rubocop:
     name: Run Rubocop Linter

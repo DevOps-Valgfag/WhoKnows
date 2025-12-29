@@ -151,6 +151,18 @@ button:hover, input[type="submit"]:hover {
   margin-bottom: 1rem;
 }
 
+.notice {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 ul.flashes {
   list-style: none;
   padding: 0;

@@ -292,7 +292,8 @@ post '/api/register' do
   password  = params['password']
   password2 = params['password2']
 
-  warn "[REGISTER] Incoming params: #{params.inspect}"
+  safe_params = params.reject { |k, _| k.to_s.downcase.include?('password') }
+  warn "[REGISTER] Incoming params: #{safe_params.inspect}"
 
   error = nil
   if username.to_s.empty?

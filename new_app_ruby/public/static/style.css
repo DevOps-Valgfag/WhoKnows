@@ -372,6 +372,57 @@ ul.flashes {
   margin: 0 auto;
 }
 
+.city-search-form {
+  margin-bottom: 1.5rem;
+}
+
+.city-search-container {
+  position: relative;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.city-search-input {
+  width: 100%;
+  padding: 0.75rem 3rem 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  font-size: 1rem;
+  background: var(--card-background);
+  box-sizing: border-box;
+}
+
+.city-search-input:focus {
+  outline: 2px solid var(--primary-accent);
+  border-color: transparent;
+}
+
+.city-search-button {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--primary-accent);
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.city-search-button:hover {
+  background: var(--primary-accent-hover);
+}
+
+.city-search-button svg {
+  stroke: white;
+  width: 14px;
+  height: 14px;
+}
+
 .weather-title {
   text-align: center;
   font-size: 1.75rem;

@@ -503,7 +503,7 @@ get '/weather' do
       @status = result[:data][:status]
       erb :weather
     else
-      @error = "Kunne ikke hente vejrdata for #{@city}"
+      @error = "Could not fetch weather data for #{@city}"
       erb :weather
     end
   rescue Timeout::Error
@@ -511,7 +511,7 @@ get '/weather' do
     warn "[weather] soft timeout for #{@city} - responding with try-again message"
     fetch_thread.kill
 
-    @error = 'Vejrdata er midlertidigt utilgængelig. Prøv venligst igen om lidt.'
+    @error = 'Weather data is temporarily unavailable. Please try again later.'
     @retry_message = true
     erb :weather
   end

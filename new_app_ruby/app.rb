@@ -442,12 +442,10 @@ get '/api/weather' do
 
   # Start fetching weather data in a background thread
   fetch_thread = Thread.new do
-    begin
-      data = get_weather_data(city)
-      result_queue << { success: true, data: data }
-    rescue StandardError => e
-      result_queue << { success: false, error: e }
-    end
+    data = get_weather_data(city)
+    result_queue << { success: true, data: data }
+  rescue StandardError => e
+    result_queue << { success: false, error: e }
   end
 
   # Wait for result with soft timeout
@@ -470,7 +468,7 @@ get '/api/weather' do
     json(
       success: true,
       city: city,
-      message: "Weather data is temporarily unavailable. Please try again later.",
+      message: 'Weather data is temporarily unavailable. Please try again later.',
       retry_after: 30
     )
   end
@@ -485,12 +483,10 @@ get '/weather' do
 
   # Start fetching weather data in a background thread
   fetch_thread = Thread.new do
-    begin
-      data = get_weather_data(@city)
-      result_queue << { success: true, data: data }
-    rescue StandardError => e
-      result_queue << { success: false, error: e }
-    end
+    data = get_weather_data(@city)
+    result_queue << { success: true, data: data }
+  rescue StandardError => e
+    result_queue << { success: false, error: e }
   end
 
   # Wait for result with soft timeout

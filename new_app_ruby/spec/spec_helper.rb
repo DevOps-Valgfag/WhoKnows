@@ -17,14 +17,14 @@ def setup_test_database!
   db_url = ENV.fetch('DATABASE_URL')
   # Parse the database name from URL
   db_name = db_url.split('/').last
-  base_url = db_url.sub(/\/[^\/]+$/, '/postgres')
+  base_url = db_url.sub(%r{/[^/]+$}, '/postgres')
 
   begin
     # Connect to postgres database to create test db
     admin_db = Sequel.connect(base_url)
 
     # Check if test database exists
-    exists = admin_db.fetch("SELECT 1 FROM pg_database WHERE datname = ?", db_name).first
+    exists = admin_db.fetch('SELECT 1 FROM pg_database WHERE datname = ?', db_name).first
 
     unless exists
       admin_db.run("CREATE DATABASE #{db_name}")
@@ -34,7 +34,7 @@ def setup_test_database!
     admin_db.disconnect
   rescue Sequel::DatabaseConnectionError => e
     puts "Warning: Could not connect to create test database: #{e.message}"
-    puts "Make sure PostgreSQL is running and accessible."
+    puts 'Make sure PostgreSQL is running and accessible.'
     raise
   end
 end
@@ -64,21 +64,21 @@ end
 
 def seed_test_data!(db)
   # Insert test data if not exists
-  unless db[:pages].where(title: 'MATLAB').first
-    db[:pages].insert(
-      title: 'MATLAB',
-      url: 'http://web.archive.org/web/20090110165251/http://en.wikipedia.org:80/wiki/Matlab',
-      language: 'en',
-      last_updated: Time.new(2009, 1, 10),
-      content: 'MATLAB is a numerical computing environment and programming language used for matrix computations, algorithm development, data analysis and visualization.'
-    )
-  end
+  return if db[:pages].where(title: 'MATLAB').first
+
+  db[:pages].insert(
+    title: 'MATLAB',
+    url: 'http://web.archive.org/web/20090110165251/http://en.wikipedia.org:80/wiki/Matlab',
+    language: 'en',
+    last_updated: Time.new(2009, 1, 10),
+    content: 'MATLAB is a numerical computing environment and programming language used for matrix computations, algorithm development, data analysis and visualization.'
+  )
 end
 
 # Setup test database before loading app
 setup_test_database!
 
-require_relative '../app'    # loads app.rb (Sinatra app)
+require_relative '../app' # loads app.rb (Sinatra app)
 
 # Setup schema and seed data
 setup_test_schema!(DB)

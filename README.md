@@ -93,8 +93,9 @@ WhoKnows/
 | Document | Description |
 |----------|-------------|
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Git flow, conventions, PR process |
-| [TESTING.md](new_app_ruby/TESTING.md) | How to run tests locally |
-| [DEPLOYMENT.md](new_app_ruby/DEPLOYMENT.md) | Docker setup, CI/CD, production |
+| [LINTING.md](01_LINTING.md) | How to lint locally before PR |
+| [TESTING.md](new_app_ruby/02_TESTING.md) | How to run tests locally |
+| [DEPLOYMENT.md](new_app_ruby/03_DEPLOYMENT.md) | Docker setup, CI/CD, production |
 | [API Docs](https://we-know.dk/docs) | Interactive Swagger documentation |
 
 ## Tech Stack

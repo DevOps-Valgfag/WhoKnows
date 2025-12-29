@@ -1,0 +1,59 @@
+AllCops:
+  TargetRubyVersion: 3.2
+  SuggestExtensions: false
+  NewCops: disable
+ # -----------------------------
+# Style / cosmetic cops
+# -----------------------------
+
+Style/FrozenStringLiteralComment:
+  Enabled: false   # vi ønsker ikke magic comment på alle filer
+
+Style/StringConcatenation:
+  Enabled: false   # vi ønsker ikke at konvertere "a" + "b" → "#{a}#{b}"
+
+Style/SafeNavigation:
+  Enabled: false   # vi ønsker ikke at ændre && til &.
+
+Style/NumericPredicate:
+  Enabled: false   # Vi vil hellere bruge > 0
+
+Style/IdenticalConditionalBranches:
+  Enabled: false   # Vi vil ikke refaktorere conditional duplication
+
+Style/MutableConstant:
+  Enabled: false 
+
+Style/SafeNavigationChainLength:
+  Enabled: false
+
+Layout/LineLength:
+  Exclude:
+    - 'spec/**/*'
+
+
+# -----------------------------
+# Metrics cops (kompleksitet)
+# -----------------------------
+
+Metrics/BlockLength:
+  Enabled: false   # Du vil ikke ændre længden på dine Sinatra routes
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Security/Open:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
+

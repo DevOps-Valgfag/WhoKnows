@@ -1,0 +1,261 @@
+require 'nokogiri'
+require 'open-uri'
+require 'sequel'
+require 'pg'
+
+
+# Prevent Sinatra from starting the web server when required
+require 'sinatra'
+set :run, false
+
+require './app'
+# DB is provided by app.rb
+
+
+desc "Scrape new sites and add to search engine"
+task :scrape_sites do
+  puts "Starting scrape..."
+
+  # List of URLs to scrape based on user search trends
+  urls_to_scrape = [
+    'https://en.wikipedia.org/wiki/Unsupervised_learning',
+    'https://developer.mozilla.org/en-US/', # Web development
+    'https://www.python.org/',
+    'https://www.rust-lang.org/',
+    'https://en.wikipedia.org/wiki/Forth_(programming_language)',
+    'https://en.wikipedia.org/wiki/Assembly_language',
+    'https://docs.microsoft.com/en-us/dotnet/csharp/',
+    'https://www.adaic.org/',
+    'https://coq.inria.fr/',
+    'https://www.php.net/',
+    'https://en.wikipedia.org/wiki/Distributed_database',
+    'https://en.wikipedia.org/wiki/Modula-2',
+    'https://en.wikipedia.org/wiki/Machine_learning',
+    'https://dart.dev/',
+    'https://www.arangodb.com/',
+    'https://hadoop.apache.org/',
+    'https://www.lua.org/',
+    'https://www.gnu.org/software/bash/',
+    'https://www.ruby-lang.org/en/',
+    'https://julialang.org/',
+    'https://common-lisp.net/',
+    'https://crystal-lang.org/',
+    'https://en.wikipedia.org/wiki/Internet_of_things',
+    'https://fsharp.org/',
+    'https://www.r-project.org/',
+    'https://seed7.sourceforge.net/',
+    'https://go.dev/',
+    'https://www.swift.org/',
+    'https://kotlinlang.org/',
+    'https://elixir-lang.org/',
+    'https://www.haskell.org/',
+    'https://ocaml.org/',
+    'https://www.perl.org/',
+    'https://en.wikipedia.org/wiki/SQL',
+    'https://www.docker.com/',
+    'https://kubernetes.io/',
+    'https://www.mongodb.com/',
+    'https://react.dev/',
+    'https://vuejs.org/',
+    'https://angular.io/',
+    'https://nodejs.org/',
+    'https://unicon.org/',
+    'https://en.wikipedia.org/wiki/Parallel_computing',
+    'https://arc-language.github.io/',
+    'https://mozart.github.io/', # Oz
+    'https://en.wikipedia.org/wiki/Penetration_test',
+    'https://en.wikipedia.org/wiki/Database_normalization',
+    'https://en.wikipedia.org/wiki/IBM_RPG',
+    'https://en.wikipedia.org/wiki/Data_science',
+    'https://en.wikipedia.org/wiki/Virtual_reality',
+    'https://learn.microsoft.com/en-us/office/vba/api/overview/',
+    'https://opendylan.org/',
+    'https://www.snobol4.org/',
+    'https://en.wikipedia.org/wiki/Computer_security',
+    'https://en.wikipedia.org/wiki/Robotics',
+    'https://en.wikipedia.org/wiki/Memory_management',
+    'https://en.wikipedia.org/wiki/Evolutionary_computation',
+    'https://en.wikipedia.org/wiki/J_Sharp',
+    'https://livescript.net/',
+    'https://en.wikipedia.org/wiki/Modula-3',
+    'https://en.wikipedia.org/wiki/Statistical_learning_theory',
+    'https://en.wikipedia.org/wiki/REST',
+    'https://en.wikipedia.org/wiki/Synchronization_(computer_science)',
+    'https://en.wikipedia.org/wiki/Software_testing',
+    'https://ecma-international.org/',
+    'https://en.wikipedia.org/wiki/Greedy_algorithm',
+    'https://en.wikipedia.org/wiki/COBOL',
+    'https://learn.microsoft.com/en-us/azure/quantum/user-guide/language/', # Q#
+    'https://en.wikipedia.org/wiki/Microservices',
+    'https://en.wikipedia.org/wiki/Ethical_hacking',
+    'https://en.wikipedia.org/wiki/Shell_script',
+    'https://octave.org/',
+    'https://en.wikipedia.org/wiki/Cryptography',
+    'https://www.scala-lang.org/',
+    'https://squeak.org/',
+    'https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model',
+    'http://www.squirrel-lang.org/',
+    'https://en.wikipedia.org/wiki/SOAP',
+    'https://groovy-lang.org/',
+    'https://en.wikipedia.org/wiki/DevOps',
+    'https://chapel-lang.org/',
+    'https://racket-lang.org/',
+    'https://en.wikipedia.org/wiki/Quantum_computing',
+    'https://en.wikipedia.org/wiki/MapReduce',
+    'https://en.wikipedia.org/wiki/Communication_protocol',
+    'https://en.wikipedia.org/wiki/Wireless_network',
+    'https://en.wikipedia.org/wiki/Front-end_web_development',
+    'https://en.wikipedia.org/wiki/Deep_learning',
+    'https://squeak.org/',
+    'https://www.scheme.org/',
+    'https://www.jsoftware.com/', # J
+    'https://www.tcl.tk/',
+    'https://en.wikipedia.org/wiki/NoSQL',
+    'https://en.wikipedia.org/wiki/ML_(programming_language)',
+    'https://en.wikipedia.org/wiki/Data_modeling',
+    'https://en.wikipedia.org/wiki/Adobe_ColdFusion',
+    'https://ocaml.org/',
+    'https://isocpp.org/', # C++
+    'https://en.wikipedia.org/wiki/S-PLUS',
+    'https://en.wikipedia.org/wiki/Continuous_integration',
+    'https://storm.apache.org/',
+    'https://www.wolfram.com/language/',
+    'https://en.wikipedia.org/wiki/Artificial_intelligence',
+    'https://en.wikipedia.org/wiki/Version_control',
+    'https://en.wikipedia.org/wiki/ActionScript',
+    'https://cassandra.apache.org/',
+    'https://en.wikipedia.org/wiki/Computer_vision',
+    'https://en.wikipedia.org/wiki/Software_engineering',
+    'https://x10-lang.org/',
+    'https://www.sas.com/',
+    'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+    'https://en.wikipedia.org/wiki/Cloud_computing',
+    'https://www.ni.com/en-us/shop/labview.html',
+    'https://www.stata.com/',
+    'https://www.adacore.com/sparkpro',
+    'https://en.wikipedia.org/wiki/Service-oriented_architecture',
+    'https://www.erlang.org/',
+    'https://en.wikipedia.org/wiki/Computer_architecture',
+    'https://en.wikipedia.org/wiki/Video_game_development',
+    'https://en.wikipedia.org/wiki/Neural_network',
+    'https://scratch.mit.edu/',
+    'https://soliditylang.org/',
+    'https://en.wikipedia.org/wiki/Blockchain',
+    'https://clojure.org/',
+    'https://www.dyalog.com/', # APL
+    'https://boo-lang.github.io/',
+    'https://ring-lang.net/',
+    'https://hacklang.org/',
+    'https://nim-lang.org/',
+    'https://learn.microsoft.com/en-us/powershell/',
+    'https://iolanguage.org/',
+    'https://en.wikipedia.org/wiki/Error_detection_and_correction',
+    'https://en.wikipedia.org/wiki/Big_data',
+    'https://fortran-lang.org/',
+    'https://www.alice.org/',
+    'https://en.wikipedia.org/wiki/PL/I',
+    'https://en.wikipedia.org/wiki/Data_structure',
+    'https://en.wikipedia.org/wiki/Simula',
+    'https://en.wikipedia.org/wiki/Concurrency_(computer_science)',
+    'https://en.wikipedia.org/wiki/Algorithm',
+    'https://www.ibm.com/spss',
+    'https://www.cs.arizona.edu/icon/',
+    'https://couchdb.apache.org/',
+    'https://smlfamily.github.io/',
+    'https://en.wikipedia.org/wiki/CAP_theorem',
+    'https://www.freepascal.org/',
+    'https://en.wikipedia.org/wiki/Augmented_reality',
+    'https://en.wikipedia.org/wiki/CI/CD',
+    'https://en.wikipedia.org/wiki/PL/SQL',
+    'https://www.java.com/',
+    'https://projectoberon.net/',
+    'https://en.wikipedia.org/wiki/Data_mining',
+    'https://en.wikipedia.org/wiki/Finite_automaton',
+    'https://en.wikipedia.org/wiki/Computer_graphics',
+    'https://en.wikipedia.org/wiki/Natural_language_processing',
+    'https://en.wikipedia.org/wiki/Graph_theory',
+    'https://developer.apple.com/objective-c/',
+    'https://en.wikipedia.org/wiki/ACID',
+    'https://en.wikipedia.org/wiki/ZPL_(programming_language)',
+    'https://en.wikipedia.org/wiki/Operating_system',
+    'https://en.wikipedia.org/wiki/Internet_Protocol',
+    'https://en.wikipedia.org/wiki/BCPL',
+    'https://en.wikipedia.org/wiki/ABAP',
+    'https://www.tug.org/', # TeX
+    'https://en.wikipedia.org/wiki/Human%E2%80%93computer_interaction',
+    'https://en.wikipedia.org/wiki/AWK',
+    'https://en.wikipedia.org/wiki/Delphi_(software)',
+    'https://yorick.github.io/',
+    # Non-code related topics based on user searches
+    'https://en.wikipedia.org/wiki/Aurora', # Northern Lights
+    'https://en.wikipedia.org/wiki/National_Basketball_Association',
+    'https://en.wikipedia.org/wiki/National_Football_League',
+    'https://en.wikipedia.org/wiki/Ultimate_Fighting_Championship', # UFC
+    'https://en.wikipedia.org/wiki/Stock_market',
+    'https://en.wikipedia.org/wiki/401(k)',
+    'https://en.wikipedia.org/wiki/Bitcoin',
+    'https://en.wikipedia.org/wiki/Half-Life_(series)', # Half Life 3
+    'https://en.wikipedia.org/wiki/Call_of_Duty',
+    'https://en.wikipedia.org/wiki/Steam_(service)',
+    'https://en.wikipedia.org/wiki/Taylor_Swift',
+    'https://en.wikipedia.org/wiki/Elon_Musk',
+    'https://en.wikipedia.org/wiki/Government_shutdown',
+    'https://en.wikipedia.org/wiki/Earthquake',
+    'https://en.wikipedia.org/wiki/Power_outage',
+    'https://en.wikipedia.org/wiki/Premier_League', # Soccer
+    'https://en.wikipedia.org/wiki/UEFA_Champions_League',
+    'https://en.wikipedia.org/wiki/Grammy_Awards',
+    'https://en.wikipedia.org/wiki/Black_Friday_(shopping)',
+    'https://en.wikipedia.org/wiki/Mega_Millions',
+    'https://en.wikipedia.org/wiki/Powerball',
+    'https://en.wikipedia.org/wiki/Jeopardy!',
+    'https://en.wikipedia.org/wiki/Yellowstone_(American_TV_series)', # Popular TV
+    'https://en.wikipedia.org/wiki/Stranger_Things'
+  ]
+  
+
+  MAX_CONTENT_LENGTH = 8_000  # ~8 KB
+
+  urls_to_scrape.each do |url|
+  begin
+    puts "Scraping #{url}..."
+
+    html = URI.open(url, "User-Agent" => "WhoKnowsBot/1.0 (+https://we-know.dk)")
+    doc = Nokogiri::HTML(html)
+
+    title = doc.title || url
+
+    doc.css('script, style').remove
+    main = doc.at('main') || doc.at('article') || doc.at('body')
+    content = main&.text&.strip&.gsub(/\s+/, ' ') || ""
+    content = content[0...MAX_CONTENT_LENGTH]
+
+    existing = DB[:pages].where(url: url).first
+
+    if existing
+      DB[:pages].where(url: url).update(
+        title: title,
+        content: content,
+        language: 'en',
+        last_updated: Time.now
+      )
+    else
+      DB[:pages].insert(
+        title: title,
+        url: url,
+        content: content,
+        language: 'en',
+        last_updated: Time.now
+      )
+    end
+
+    sleep 1 
+
+  rescue OpenURI::HTTPError => e
+    puts "Failed to fetch #{url}: #{e.message}"
+  rescue => e
+    puts "Error processing #{url}: #{e.class} - #{e.message}"
+  end
+end
+end
+

@@ -1,30 +1,44 @@
 # Gemfile
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 # Web framework
-gem 'sinatra', '~> 3.2'
+gem "sinatra", "~> 3.2"
 
 # Ekstra Sinatra-helpers (fx sinatra/json)
-gem 'sinatra-contrib', '~> 3.2'
+gem "sinatra-contrib", "~> 3.2"
 
 # Flash messages
-gem 'sinatra-flash', '~> 0.3.0'
+gem "sinatra-flash", "~> 0.3.0"
 
 # Webserver
-gem 'puma', '~> 6.0'
+gem "puma", "~> 6.0"
 
 # Database
-gem 'sqlite3', '~> 1.7'
+gem "sqlite3", "~> 1.7"
+gem "pg"
+gem "sequel"
 
 # Password hashing
-gem 'bcrypt', '~> 3.1'
+gem "bcrypt", "~> 3.1"
 
 # In order to use secrets from .env file
-gem 'dotenv', '~> 3.1'
+gem "dotenv", "~> 3.1"
 
-# YAML er en del af Ruby stdlib, så den behøves ikke at tilføjes som gem
+# YAML er en del af Ruby stdlib, så den behøves ikke at tilføje som gem
 
 gem 'httparty'
+gem 'nokogiri'
+gem 'rake'
+
+group :test do
+  gem 'rspec'
+  gem 'capybara'
+  gem 'selenium-webdriver'
+end
+# Prometheus til monitorering  
+gem "prometheus-client"
+# Gemfile
+source 'https://rubygems.org'
 
 group :development, :test do
   gem 'rubocop', require: false

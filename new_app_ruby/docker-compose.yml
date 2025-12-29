@@ -1,39 +1,56 @@
-# Docker Compose er som en platform, hvor vi beskriver hvordan vores 
-# services / containere hører sammen og kan styres samlet
 services:
+  db:
+    image: postgres:17
+    container_name: whoknows-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: whoknows
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - web
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d whoknows"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   app:
     container_name: app-whoknows
-    image: ghcr.io/devops-valgfag/app-whoknows:latest
-    restart: unless-stopped         # gør at containeren genstarter, hvis den stopper af sig selv
-    
+    image: ghcr.io/devops-valgfag/app-whoknows:${IMAGE_TAG}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       RACK_ENV: production
       SESSION_SECRET: ${SESSION_SECRET}
-    volumes:
-      - /home/adminuser/data:/data   # laver volumes (gør SQLite persistent)
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/whoknows
     networks:
-      - web                         # det interne netværk så de forskellige services kan snakke sammen
+      - web
     expose:
-      - "8080"                      # gør port 8080 tilgængelig internt til nginx
+      - "8080"
 
   nginx:
-    container_name: whoknows-nginx  
-    image: nginx:1.27-alpine        # starter Nginx-container som reverse proxy / frontend
+    container_name: whoknows-nginx
+    image: nginx:1.27-alpine
     depends_on:
-      - app                         # dette sikrer at Ruby-app starter først
+      - app
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/ssl/certs:ro
     ports:
-      - "80:80"                   # gør port 80 og 443 tilgængeligt udefra, altå indbound ports
+      - "80:80"
       - "443:443"
     networks:
       - web
     restart: unless-stopped
 
 volumes:
-  sqlite_data:                      # fælles ressource: Docker-volume, hvor whoknows.db ligger
+  postgres_data:
 
 networks:
-  web:                              # isoleret internt netværk hvor app og Nginx kan kommunikere
+  web:
     driver: bridge

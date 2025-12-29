@@ -7,7 +7,6 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/devops-valgfag/app-whoknows
-  CONTAINER_NAME: app-whoknows
   
 
 jobs:
@@ -25,7 +24,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PULL_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Extract metadata (tags, labels)
         id: meta
@@ -33,7 +32,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=sha
+            type=sha,format=long
             type=raw,value=latest
 
       - name: Set up Docker Buildx
@@ -73,20 +72,23 @@ jobs:
 
       - name: Deploy latest image on VM
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
-            ${{ secrets.AZURE_USER }}@${{ secrets.AZURE_HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_rsa ${{ secrets.AZURE_USER }}@${{ secrets.AZURE_HOST }} << EOF
               set -e
               echo "Logging in to GHCR..."
-              docker login ghcr.io -u '${{ github.actor }}' -p '${{ secrets.GHCR_PULL_TOKEN }}'
+              echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
+              -u "${{ github.actor }}" \
+              --password-stdin
 
-              echo "Cleaning up old containers..."
-              docker compose -f ~/app/whoknows/new_app_ruby/docker-compose.yml down || true
-
-              echo "Updating and restarting container..."
               cd ~/app/whoknows/new_app_ruby
-              export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+
+              export IMAGE_TAG=sha-${{ github.sha }}
+              export SESSION_SECRET='${{ secrets.SESSION_SECRET }}'
+              export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
+
+              docker compose down || true
               docker compose pull
               docker compose up -d --remove-orphans
+
 
               echo "Deployment complete! Running containers:"
               docker compose ps

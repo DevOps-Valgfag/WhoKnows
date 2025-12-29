@@ -123,6 +123,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.test
 .venv
 env/
 venv/
@@ -231,3 +232,5 @@ build-iPhoneSimulator/
 
 # End of https://www.toptal.com/developers/gitignore/api/ruby
 
+user_searches.txt
+/.claude/

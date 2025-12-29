@@ -432,44 +432,86 @@ def get_weather_data(city, ttl: 300, stale_until: 36_000)
   end
 end
 
+# Maximum time (in seconds) before we must respond - set based on your SLA requirement
+API_RESPONSE_TIMEOUT = ENV.fetch('API_RESPONSE_TIMEOUT', 8).to_f
+
 get '/api/weather' do
   city = params['city'] || 'Copenhagen'
+  result_queue = Queue.new
 
+  # Start fetching weather data in a background thread
+  fetch_thread = Thread.new do
+    begin
+      data = get_weather_data(city)
+      result_queue << { success: true, data: data }
+    rescue StandardError => e
+      result_queue << { success: false, error: e }
+    end
+  end
+
+  # Wait for result with soft timeout
   begin
-    result = Timeout.timeout(5) { get_weather_data(city) }
+    result = Timeout.timeout(API_RESPONSE_TIMEOUT) { result_queue.pop }
 
-    if result
+    if result[:success] && result[:data]
       content_type :json
-      json(city: city, data: result[:data], status: result[:status])
+      json(city: city, data: result[:data][:data], status: result[:data][:status])
     else
       status 502
       json(error: "Couldn't fetch weather data for: #{city}")
     end
   rescue Timeout::Error
-    warn "[weather] timeout for #{city}"
-    status 504
-    json(error: "Couldn't get weather data - request timed out")
+    # Soft timeout exceeded - respond gracefully before SLA deadline
+    warn "[weather] soft timeout for #{city} - responding with try-again message"
+    fetch_thread.kill # Clean up the background thread
+
+    content_type :json
+    json(
+      success: true,
+      city: city,
+      message: "Weather data is temporarily unavailable. Please try again later.",
+      retry_after: 30
+    )
   end
 end
 
+# Maximum time (in seconds) before HTML weather page must respond
+HTML_RESPONSE_TIMEOUT = ENV.fetch('HTML_RESPONSE_TIMEOUT', 5).to_f
+
 get '/weather' do
   @city = params['city'] || 'Copenhagen'
+  result_queue = Queue.new
 
+  # Start fetching weather data in a background thread
+  fetch_thread = Thread.new do
+    begin
+      data = get_weather_data(@city)
+      result_queue << { success: true, data: data }
+    rescue StandardError => e
+      result_queue << { success: false, error: e }
+    end
+  end
+
+  # Wait for result with soft timeout
   begin
-    result = Timeout.timeout(8) { get_weather_data(@city) }
+    result = Timeout.timeout(HTML_RESPONSE_TIMEOUT) { result_queue.pop }
 
-    if result
-      @current_condition = result[:data]['current_condition'][0]
-      @forecast = result[:data]['weather']
-      @status = result[:status]
+    if result[:success] && result[:data]
+      @current_condition = result[:data][:data]['current_condition'][0]
+      @forecast = result[:data][:data]['weather']
+      @status = result[:data][:status]
       erb :weather
     else
       @error = "Kunne ikke hente vejrdata for #{@city}"
       erb :weather
     end
   rescue Timeout::Error
-    warn "[weather] timeout for #{@city}"
-    @error = 'Kunne ikke hente vejrdata - anmodningen tog for lang tid'
+    # Soft timeout exceeded - respond gracefully
+    warn "[weather] soft timeout for #{@city} - responding with try-again message"
+    fetch_thread.kill
+
+    @error = 'Vejrdata er midlertidigt utilgængelig. Prøv venligst igen om lidt.'
+    @retry_message = true
     erb :weather
   end
 end

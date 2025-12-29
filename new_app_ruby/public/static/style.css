@@ -337,13 +337,13 @@ ul.flashes {
   margin-bottom: 1.5rem;
 }
 
-/* Target the image that follows the team h2 */
-.body > h1:first-child + p + h2 + img {
+/* Team image on About page */
+.team-image {
   display: block;
-  margin: 0 auto; /* Center the image */
+  margin: 0 auto;
+  max-width: 400px;
   width: 100%;
-  max-width: auto;
-  height: auto; /* Override the inline style */
+  height: auto;
   border-radius: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }

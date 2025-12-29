@@ -40,14 +40,13 @@ body {
 
 /* 3. Navigation and Footer */
 .navigation nav {
-  position: relative; /* Establishes a positioning context for the logo */
+  position: relative;
   display: flex;
-  justify-content: flex-end; /* Pushes all links to the right */
+  justify-content: space-between;
   align-items: center;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 2rem;
-  gap: 1.5rem; /* Adds space between the right-aligned links */
 }
 
 #nav-logo {
@@ -365,5 +364,112 @@ ul.flashes {
 
 .nav-links a:hover {
   text-decoration: underline;
+}
+
+/* Nav Left (Weather link) */
+.nav-left {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-left a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-left a:hover {
+  text-decoration: underline;
+}
+
+/* 10. Quick Links Section (Landing Page) */
+.quick-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem auto 2rem;
+  max-width: 600px;
+}
+
+.quick-link-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  flex: 1;
+  max-width: 280px;
+}
+
+.quick-link-card:hover {
+  border-color: var(--primary-accent);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.quick-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  color: white;
+  flex-shrink: 0;
+}
+
+.weather-card .quick-link-icon {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+.quick-link-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.quick-link-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.quick-link-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.quick-link-arrow {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.quick-link-card:hover .quick-link-arrow {
+  transform: translateX(4px);
+  color: var(--primary-accent);
+}
+
+@media (max-width: 600px) {
+  .quick-links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .quick-link-card {
+    max-width: 100%;
+    width: 100%;
+  }
 }
 

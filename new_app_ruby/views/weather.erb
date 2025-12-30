@@ -1,43 +1,64 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Weather Forecast for <%= @city %></title>
-</head>
-<body>
+<div class="weather-page">
+  <form action="/weather" method="get" class="city-search-form">
+    <div class="city-search-container">
+      <input
+        type="text"
+        name="city"
+        placeholder="Search city..."
+        value="<%= @city %>"
+        class="city-search-input"
+        autocomplete="off"
+      />
+      <button type="submit" class="city-search-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
+  </form>
 
-  <h1>Weather Forecast for <%= @city %></h1>
+  <h1 class="weather-title">Weather in <%= @city %></h1>
 
-  <% if @status == :stale %>
-    <p style="color: orange;">
-      ⚠️ Showing latest available data as live data could not be retrieved right now. Be aware that data can be up to ten hours old!
-    </p>
-  <% end %>
-
-  <% if @current_condition %>
-    <h2>Current Weather</h2>
-    <p>
-      Currently: <strong><%= @current_condition['temp_C'] %>°C</strong>,
-      feels like <%= @current_condition['FeelsLikeC'] %>°C.
-    </p>
-    <p><%= @current_condition['weatherDesc'][0]['value'] %></p>
-  <% else %>
-    <p>No current data available.</p>
-  <% end %>
-
-  <hr>
-
-  <h2>3-Day Forecast</h2>
-  <div class="forecast-container">
-    <% (@forecast || []).each do |day| %>
-      <div class="day">
-        <div class="date"><%= Date.parse(day['date']).strftime('%A, %b %d') %></div>
-        <div>Max: <strong><%= day['maxtempC'] %>°C</strong></div>
-        <div>Min: <strong><%= day['mintempC'] %>°C</strong></div>
-        <div>Avg: <%= day['avgtempC'] %>°C</div>
-        <p><%= day['hourly'][4]['weatherDesc'][0]['value'] %></p>
+  <% if @error %>
+    <div class="weather-error">
+      <p><%= @error %></p>
+    </div>
+  <% elsif @current_condition %>
+    <% if @status == :stale %>
+      <div class="weather-stale-warning">
+        Showing cached data - live data temporarily unavailable
       </div>
     <% end %>
-  </div>
 
-</body>
-</html>
+    <div class="weather-current">
+      <div class="weather-temp">
+        <span class="temp-value"><%= @current_condition['temp_C'] %></span>
+        <span class="temp-unit">°C</span>
+      </div>
+      <div class="weather-details">
+        <p class="weather-condition"><%= @current_condition['weatherDesc'][0]['value'] %></p>
+        <p class="weather-feels">Feels like <%= @current_condition['FeelsLikeC'] %>°C</p>
+      </div>
+    </div>
+
+    <h2 class="forecast-title">3-Day Forecast</h2>
+    <div class="forecast-grid">
+      <% (@forecast || []).each do |day| %>
+        <div class="forecast-card">
+          <div class="forecast-day"><%= Date.parse(day['date']).strftime('%A') %></div>
+          <div class="forecast-date"><%= Date.parse(day['date']).strftime('%b %d') %></div>
+          <div class="forecast-temps">
+            <span class="temp-high"><%= day['maxtempC'] %>°</span>
+            <span class="temp-low"><%= day['mintempC'] %>°</span>
+          </div>
+          <div class="forecast-condition"><%= day['hourly'][4]['weatherDesc'][0]['value'] %></div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="weather-error">
+      <p>No weather data available.</p>
+    </div>
+  <% end %>
+</div>

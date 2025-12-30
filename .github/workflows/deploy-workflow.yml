@@ -65,7 +65,7 @@ jobs:
       # --- KOPIÉR FILER TIL SERVER ---
       - name: Upload docker compose & nginx to VM
         run: |
-          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+          scp -i ~/.ssh/id_rsa \
             new_app_ruby/docker-compose.yml \
             new_app_ruby/nginx.conf \
             "${{ secrets.AZURE_USER }}@${{ secrets.AZURE_HOST }}:/home/${{ secrets.AZURE_USER }}/app/whoknows/new_app_ruby"
@@ -93,3 +93,4 @@ jobs:
               echo "Deployment complete! Running containers:"
               docker compose ps
           EOF
+

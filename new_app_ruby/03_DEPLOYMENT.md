@@ -62,8 +62,10 @@ docker compose down
 ```
 
 Services:
-- **App**: http://localhost:80 (via Nginx)
+- **App**: http://localhost:8080
 - **PostgreSQL**: localhost:5432
+
+> **Note**: Nginx requires SSL certificates and is configured for production. For local development, access the app directly on port 8080.
 
 ### Option 2: Database Only
 

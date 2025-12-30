@@ -20,6 +20,7 @@ This guide covers local development with Docker and production deployment via CI
 | `POSTGRES_USER` | Database username | Yes |
 | `POSTGRES_PASSWORD` | Database password | Yes |
 | `POSTGRES_DB` | Database name | Yes |
+| `IMAGE_TAG` | Docker image tag (e.g., `latest`, `sha-abc123`) | Yes |
 | `RACK_ENV` | Environment (`development`, `test`, `production`) | No |
 
 ### Generate a Session Secret
@@ -38,6 +39,7 @@ POSTGRES_DB=whoknows
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 DATABASE_URL=postgresql://whoknows:your-secure-password-here@localhost:5432/whoknows
+IMAGE_TAG=latest
 ```
 
 ## Local Development with Docker

@@ -33,13 +33,17 @@ cd app-whoknows/new_app_ruby
 
 # Configure environment
 cp .env.example .env
-# Edit .env with your settings
 
-# Run with Docker
+# Start containers
 docker compose up -d
+
+# Seed the database (first run only, takes ~3 min)
+docker exec app-whoknows bundle exec rake scrape_sites
 ```
 
 Application available at `http://localhost:80`
+
+> **Local development:** The production nginx uses SSL. See [DEPLOYMENT.md](new_app_ruby/03_DEPLOYMENT.md#first-time-setup-required) for local setup without SSL.
 
 ## Architecture
 

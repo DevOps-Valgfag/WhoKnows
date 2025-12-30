@@ -48,16 +48,119 @@ USER_LOGGED_IN = Prometheus::Client::Counter.new(
   docstring: 'Total number of successful logins'
 )
 
+# --- NEW METRICS: Answering "What are users searching?" ---
+SEARCH_TERMS_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_search_terms_total,
+  docstring: 'Search terms used by users',
+  labels: [:term]
+)
+
+# --- NEW METRICS: Answering "How many users do we have?" ---
+TOTAL_USERS_GAUGE = Prometheus::Client::Gauge.new(
+  :whoknows_total_users,
+  docstring: 'Total number of registered users in database'
+)
+
+# --- NEW METRICS: Answering "How long are they logged in?" ---
+SESSION_DURATION_HISTOGRAM = Prometheus::Client::Histogram.new(
+  :whoknows_session_duration_seconds,
+  docstring: 'Duration of user sessions in seconds',
+  buckets: [60, 300, 600, 1800, 3600, 7200, 14400, 28800] # 1min, 5min, 10min, 30min, 1h, 2h, 4h, 8h
+)
+
+# --- NEW METRICS: Request latency ---
+REQUEST_DURATION_HISTOGRAM = Prometheus::Client::Histogram.new(
+  :whoknows_request_duration_seconds,
+  docstring: 'HTTP request duration in seconds',
+  labels: [:method, :path, :status],
+  buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+)
+
+# --- NEW METRICS: Page views ---
+PAGE_VIEWS_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_page_views_total,
+  docstring: 'Total page views by path',
+  labels: [:path]
+)
+
+# --- NEW METRICS: Weather API monitoring ---
+WEATHER_CACHE_HIT_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_weather_cache_hits_total,
+  docstring: 'Weather cache hits'
+)
+WEATHER_CACHE_MISS_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_weather_cache_misses_total,
+  docstring: 'Weather cache misses'
+)
+WEATHER_API_ERROR_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_weather_api_errors_total,
+  docstring: 'Weather API errors'
+)
+
+# --- NEW METRICS: Security monitoring ---
+LOGIN_FAILED_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_login_failed_total,
+  docstring: 'Total number of failed login attempts',
+  labels: [:reason]
+)
+
+# --- NEW METRICS: Active sessions ---
+ACTIVE_SESSIONS_GAUGE = Prometheus::Client::Gauge.new(
+  :whoknows_active_sessions,
+  docstring: 'Number of active user sessions'
+)
+
 PROM_REGISTRY.register(SEARCH_COUNTER)
 PROM_REGISTRY.register(SEARCH_MATCH_COUNTER)
 PROM_REGISTRY.register(USER_REGISTERED)
 PROM_REGISTRY.register(USER_LOGGED_IN)
+PROM_REGISTRY.register(SEARCH_TERMS_COUNTER)
+PROM_REGISTRY.register(TOTAL_USERS_GAUGE)
+PROM_REGISTRY.register(SESSION_DURATION_HISTOGRAM)
+PROM_REGISTRY.register(REQUEST_DURATION_HISTOGRAM)
+PROM_REGISTRY.register(PAGE_VIEWS_COUNTER)
+PROM_REGISTRY.register(WEATHER_CACHE_HIT_COUNTER)
+PROM_REGISTRY.register(WEATHER_CACHE_MISS_COUNTER)
+PROM_REGISTRY.register(WEATHER_API_ERROR_COUNTER)
+PROM_REGISTRY.register(LOGIN_FAILED_COUNTER)
+PROM_REGISTRY.register(ACTIVE_SESSIONS_GAUGE)
 
 configure do
   set :trust_proxy, true
   enable :sessions
   set :session_secret, ENV.fetch('SESSION_SECRET')
   register Sinatra::Flash
+end
+
+# --- Session tracking storage (in-memory for active sessions) ---
+ACTIVE_SESSIONS = {}
+ACTIVE_SESSIONS_MUTEX = Mutex.new
+
+# Helper to sanitize search terms for metrics (avoid cardinality explosion)
+def sanitize_search_term(term)
+  return 'empty' if term.nil? || term.strip.empty?
+
+  normalized = term.downcase.strip.gsub(/\s+/, ' ')
+  # Truncate long queries and limit to first 50 chars
+  normalized = normalized[0, 50]
+  # Replace special chars with underscore
+  normalized.gsub(/[^a-z0-9\s]/, '_')
+end
+
+# Helper to normalize path for metrics (avoid cardinality explosion from query params)
+def normalize_path(path)
+  case path
+  when '/', '/api/search' then '/search'
+  when '/weather', '/api/weather' then '/weather'
+  when '/login', '/api/login' then '/login'
+  when '/register', '/api/register' then '/register'
+  when '/api/logout' then '/logout'
+  when '/about' then '/about'
+  when '/change_password' then '/change_password'
+  when '/metrics' then '/metrics'
+  when '/docs' then '/docs'
+  else '/other'
+  end
 end
 
 set :port, 8080
@@ -164,12 +267,33 @@ end
 before do
   env['g'] ||= {}
   env['g']['db'] = DB
+  env['g']['request_start'] = Time.now
 
   if session[:user_id]
     user = DB.fetch('SELECT * FROM users WHERE id = ?', session[:user_id]).first
     env['g']['user'] = user
   else
     env['g']['user'] = nil
+  end
+end
+
+after do
+  # Skip metrics for the metrics endpoint itself
+  next if request.path_info == '/metrics'
+
+  # Track request duration
+  if env['g'] && env['g']['request_start']
+    duration = Time.now - env['g']['request_start']
+    normalized_path = normalize_path(request.path_info)
+    REQUEST_DURATION_HISTOGRAM.observe(
+      duration,
+      labels: { method: request.request_method, path: normalized_path, status: response.status.to_s }
+    )
+
+    # Track page views (only for GET requests to main pages)
+    if request.request_method == 'GET' && !request.path_info.start_with?('/api/')
+      PAGE_VIEWS_COUNTER.increment(labels: { path: normalized_path })
+    end
   end
 end
 
@@ -184,6 +308,9 @@ get '/' do
     @search_results = perform_search(DB, q, language)
     SEARCH_COUNTER.increment(labels: { language: language })
     SEARCH_MATCH_COUNTER.increment(labels: { language: language }) if @search_results.any?
+    # Track what users are searching for
+    sanitized_term = sanitize_search_term(q)
+    SEARCH_TERMS_COUNTER.increment(labels: { term: sanitized_term })
   else
     @search_results = []
   end
@@ -199,6 +326,9 @@ get '/api/search' do
     @search_results = perform_search(DB, q, language)
     SEARCH_COUNTER.increment(labels: { language: language })
     SEARCH_MATCH_COUNTER.increment(labels: { language: language }) if @search_results.any?
+    # Track what users are searching for
+    sanitized_term = sanitize_search_term(q)
+    SEARCH_TERMS_COUNTER.increment(labels: { term: sanitized_term })
   else
     @search_results = []
   end
@@ -218,11 +348,20 @@ post '/api/login' do
   error = nil
   if user.nil?
     error = 'Invalid username'
+    LOGIN_FAILED_COUNTER.increment(labels: { reason: 'invalid_username' })
   elsif !verify_password(user[:password], password)
     error = 'Invalid password'
+    LOGIN_FAILED_COUNTER.increment(labels: { reason: 'invalid_password' })
   else
     session[:user_id] = user[:id]
+    session[:login_time] = Time.now.to_i # Track session start for duration calculation
     USER_LOGGED_IN.increment
+
+    # Track active session
+    ACTIVE_SESSIONS_MUTEX.synchronize do
+      ACTIVE_SESSIONS[user[:id]] = Time.now
+      ACTIVE_SESSIONS_GAUGE.set(ACTIVE_SESSIONS.size)
+    end
 
     if user[:must_change_password].to_i == 1
       redirect '/change_password'
@@ -349,6 +488,20 @@ post '/api/register' do
 end
 
 get '/api/logout' do
+  # Track session duration before clearing
+  if session[:login_time]
+    duration = Time.now.to_i - session[:login_time]
+    SESSION_DURATION_HISTOGRAM.observe(duration)
+  end
+
+  # Remove from active sessions
+  if session[:user_id]
+    ACTIVE_SESSIONS_MUTEX.synchronize do
+      ACTIVE_SESSIONS.delete(session[:user_id])
+      ACTIVE_SESSIONS_GAUGE.set(ACTIVE_SESSIONS.size)
+    end
+  end
+
   session.clear
   flash[:info] = 'Thank you for now. Log in again to continue searching and get the most out of the application.'
   redirect '/login'
@@ -385,6 +538,14 @@ end
 # /metrics
 # ----------------------------
 get '/metrics' do
+  # Refresh gauge metrics before responding
+  begin
+    user_count = DB.fetch('SELECT COUNT(*) AS count FROM users').first[:count]
+    TOTAL_USERS_GAUGE.set(user_count)
+  rescue StandardError => e
+    warn "[metrics] Error fetching user count: #{e.message}"
+  end
+
   content_type 'text/plain'
   Prometheus::Client::Formats::Text.marshal(PROM_REGISTRY)
 end
@@ -400,10 +561,12 @@ def get_weather_data(city, ttl: 300, stale_until: 36_000)
 
   if CACHE[:weather][city_key] && CACHE[:expires_at][city_key] > now
     warn "[CACHE HIT] Bruger cached data for #{city}"
+    WEATHER_CACHE_HIT_COUNTER.increment
     return { data: CACHE[:weather][city_key], status: :fresh }
   end
 
   warn "[CACHE MISS] Henter nyt data for #{city} fra API"
+  WEATHER_CACHE_MISS_COUNTER.increment
   url = "https://wttr.in/#{URI.encode_www_form_component(city)}?format=j1"
 
   begin
@@ -417,6 +580,7 @@ def get_weather_data(city, ttl: 300, stale_until: 36_000)
 
       { data: data, status: :fresh }
     else
+      WEATHER_API_ERROR_COUNTER.increment
       if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
         return { data: CACHE[:weather][city_key], status: :stale }
       end
@@ -425,6 +589,7 @@ def get_weather_data(city, ttl: 300, stale_until: 36_000)
     end
   rescue StandardError => e
     warn "[weather] error for #{city}: #{e.class} #{e.message}"
+    WEATHER_API_ERROR_COUNTER.increment
     if CACHE[:weather][city_key] && CACHE[:stale_until][city_key] > now
       return { data: CACHE[:weather][city_key], status: :stale }
     end

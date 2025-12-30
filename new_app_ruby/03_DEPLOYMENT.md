@@ -246,6 +246,18 @@ docker compose exec db psql -U whoknows -d whoknows -c "SELECT 1"
 # postgresql://user:password@host:port/database
 ```
 
+### Empty Database (No Pages)
+
+If the database is empty after a fresh setup, import data from the SQLite file:
+
+```bash
+# Copy SQLite file into container
+docker cp whoknows.db app-whoknows:/app/whoknows.db
+
+# Run import script
+docker exec app-whoknows sh -c "SQLITE_PATH=/app/whoknows.db bundle exec ruby db/import_sqlite.rb"
+```
+
 ### Permission Issues
 
 ```bash

@@ -234,3 +234,7 @@ build-iPhoneSimulator/
 
 user_searches.txt
 /.claude/
+
+# Local development files (not for production)
+docker-compose.override.yml
+nginx.local.conf

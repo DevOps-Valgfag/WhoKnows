@@ -42,9 +42,61 @@ DATABASE_URL=postgresql://whoknows:your-secure-password-here@localhost:5432/whok
 
 ## Local Development with Docker
 
-### Option 1: Full Stack (Recommended)
+### First-Time Setup (Required)
 
-Run the entire stack with Docker Compose:
+The production nginx config uses SSL, which requires certificates. For local development, create these two files:
+
+**Step 1: Create `nginx.local.conf`**
+
+```nginx
+# Local development nginx config (no SSL)
+user  nginx;
+worker_processes  auto;
+
+events { worker_connections 1024; }
+
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+  sendfile      on;
+  keepalive_timeout  65;
+
+  upstream whoknows_app {
+    server app:8080;
+  }
+
+  server {
+    listen 80;
+    server_name localhost;
+
+    location / {
+      proxy_pass         http://whoknows_app;
+      proxy_http_version 1.1;
+      proxy_set_header   Host              $http_host;
+      proxy_set_header   X-Forwarded-Host  $http_host;
+      proxy_set_header   X-Real-IP         $remote_addr;
+      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+  }
+}
+```
+
+**Step 2: Create `docker-compose.override.yml`**
+
+```yaml
+# Local development overrides (uses nginx without SSL)
+services:
+  nginx:
+    volumes:
+      - ./nginx.local.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+```
+
+> Both files are gitignored and won't be pushed to the repository.
+
+### Running the Application
 
 ```bash
 cd new_app_ruby
@@ -63,7 +115,17 @@ Services:
 - **App**: http://localhost:80 (via Nginx)
 - **PostgreSQL**: localhost:5432
 
-### Option 2: Database Only
+### Seed the Database (First Run Only)
+
+The database starts empty. To populate it with searchable pages:
+
+```bash
+docker exec app-whoknows bundle exec rake scrape_sites
+```
+
+This scrapes ~180 pages from Wikipedia and tech sites. Takes about 3 minutes.
+
+### Alternative: Database Only
 
 Run only PostgreSQL in Docker, app locally:
 
@@ -96,7 +158,7 @@ Internet
     │
     ▼
 ┌─────────┐     ┌─────────┐     ┌─────────┐
-│  Nginx  │────▶│   App   │────▶│ Postgres│
+│  Nginx  │───▶│   App   │────▶│ Postgres│
 │ :80/443 │     │  :8080  │     │  :5432  │
 └─────────┘     └─────────┘     └─────────┘
 ```

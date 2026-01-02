@@ -18,7 +18,7 @@ GEM
       xpath (~> 3.2)
     csv (3.3.5)
     diff-lcs (1.6.2)
-    dotenv (3.1.8)
+    dotenv (3.2.0)
     httparty (0.23.1)
       csv
       mini_mime (>= 1.0.0)
@@ -168,7 +168,7 @@ PLATFORMS
 DEPENDENCIES
   bcrypt (~> 3.1)
   capybara
-  dotenv (~> 3.1)
+  dotenv (~> 3.2)
   httparty
   nokogiri
   pg

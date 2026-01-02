@@ -24,6 +24,8 @@ DB = Sequel.connect(
   test: true
 )
 
+# exam 
+
 # ----------------------------
 # Prometheus metrics
 # ----------------------------

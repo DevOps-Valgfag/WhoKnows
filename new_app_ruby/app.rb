@@ -14,7 +14,7 @@ require 'pg'
 
 require 'prometheus/client'
 require 'prometheus/client/formats/text'
-# exam comment
+# exam
 # ----------------------------
 # DB (Postgres via DATABASE_URL)
 # ----------------------------

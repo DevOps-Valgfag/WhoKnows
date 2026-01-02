@@ -1,0 +1,134 @@
+# CI workflow for Dependabot PRs
+# Runs tests and linting on dependency update PRs
+
+name: Dependabot CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+
+# Only run on Dependabot PRs
+jobs:
+  # Check if this is a Dependabot PR
+  check-dependabot:
+    runs-on: ubuntu-latest
+    outputs:
+      is-dependabot: ${{ steps.check.outputs.is-dependabot }}
+    steps:
+      - name: Check if Dependabot PR
+        id: check
+        run: |
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
+            echo "is-dependabot=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-dependabot=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Run tests on Dependabot PRs
+  test:
+    needs: check-dependabot
+    if: needs.check-dependabot.outputs.is-dependabot == 'true'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RACK_ENV: "test"
+      TEST_ENV: "true"
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      DATABASE_URL: postgres://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@localhost:5432/${{ secrets.DB_NAME }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: new_app_ruby
+
+      - name: Install dependencies
+        working-directory: new_app_ruby
+        run: bundle install
+
+      - name: Run RuboCop
+        working-directory: new_app_ruby
+        run: bundle exec rubocop --parallel --display-cop-names
+
+      - name: Install Chrome for E2E tests
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Run unit and feature tests
+        working-directory: new_app_ruby
+        run: bundle exec rspec spec/unit spec/features --format documentation
+
+      - name: Run E2E browser tests
+        working-directory: new_app_ruby
+        run: bundle exec rspec spec/e2e --format documentation
+
+  # Security audit for Ruby dependencies
+  security-audit:
+    needs: check-dependabot
+    if: needs.check-dependabot.outputs.is-dependabot == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: new_app_ruby
+
+      - name: Install bundler-audit
+        run: gem install bundler-audit
+
+      - name: Run security audit
+        working-directory: new_app_ruby
+        run: |
+          bundle audit check --update
+        continue-on-error: true
+
+      - name: Check for vulnerable dependencies
+        working-directory: new_app_ruby
+        run: |
+          echo "## Security Audit Results" >> $GITHUB_STEP_SUMMARY
+          bundle audit check --update >> $GITHUB_STEP_SUMMARY 2>&1 || true
+
+  # Summary job
+  dependabot-summary:
+    needs: [test, security-audit]
+    if: always() && needs.check-dependabot.outputs.is-dependabot == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Dependabot PR Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ needs.security-audit.result == 'success' && '✅ Passed' || '⚠️ Review needed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Review the PR carefully before merging.**" >> $GITHUB_STEP_SUMMARY

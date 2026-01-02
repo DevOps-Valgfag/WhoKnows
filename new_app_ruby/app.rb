@@ -434,7 +434,7 @@ def get_weather_data(city, ttl: 300, stale_until: 36_000)
 end
 
 # Maximum time (in seconds) before we must respond - set based on your SLA requirement
-API_RESPONSE_TIMEOUT = ENV.fetch('API_RESPONSE_TIMEOUT', 9.5).to_f
+API_RESPONSE_TIMEOUT = ENV.fetch('API_RESPONSE_TIMEOUT', 5).to_f
 
 get '/api/weather' do
   city = params['city'] || 'Copenhagen'
@@ -475,7 +475,7 @@ get '/api/weather' do
 end
 
 # Maximum time (in seconds) before HTML weather page must respond
-HTML_RESPONSE_TIMEOUT = ENV.fetch('HTML_RESPONSE_TIMEOUT', 5.5).to_f
+HTML_RESPONSE_TIMEOUT = ENV.fetch('HTML_RESPONSE_TIMEOUT', 5).to_f
 
 get '/weather' do
   @city = params['city'] || 'Copenhagen'

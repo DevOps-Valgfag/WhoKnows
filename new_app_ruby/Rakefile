@@ -221,8 +221,46 @@ task :scrape_sites do
 
     title = doc.title || url
 
+    # Remove script, style, and common navigation/UI elements
     doc.css('script, style').remove
-    main = doc.at('main') || doc.at('article') || doc.at('body')
+
+    # Remove Wikipedia-specific navigation and UI elements
+    if url.include?('wikipedia.org')
+      doc.css([
+        '#mw-navigation',           # Main navigation
+        '#mw-panel',                # Side panel
+        '.mw-editsection',          # "[edit]" links
+        '.interlanguage-link',      # Language links in sidebar
+        '#siteSub',                 # "From Wikipedia, the free encyclopedia"
+        '#contentSub',              # Content subtitle
+        '.mw-indicators',           # Page indicators
+        '#catlinks',                # Category links at bottom
+        '#toc', '.toc',             # Table of contents
+        '.navbox',                  # Navigation boxes
+        '.mw-jump-link',            # Skip links
+        '.vector-toc',              # Vector skin TOC
+        '.vector-menu',             # Vector menus
+        '.mw-portlet',              # Sidebar widgets
+        'footer',                   # Footer
+        'nav',                      # Navigation elements
+        '.sistersitebox',           # Sister site links
+        '.noprint',                 # Non-printable elements
+        '.mw-authority-control',    # Authority control box
+        '.reflist',                 # References section
+        '.reference',               # Inline references
+        '#coordinates',             # Coordinate info
+        '.infobox',                 # Info boxes (often contain cluttered data)
+        '.sidebar',                 # Sidebars
+        '.metadata',                # Metadata boxes
+        '.mbox-small',              # Small message boxes
+        '.ambox',                   # Article message boxes
+        '.tmbox',                   # Talk page message boxes
+        '.shortdescription',        # Short description
+        '.mw-headline'              # Headline spans (text is in parent)
+      ].join(', ')).remove
+    end
+
+    main = doc.at('#mw-content-text') || doc.at('main') || doc.at('article') || doc.at('body')
     content = main&.text&.strip&.gsub(/\s+/, ' ') || ''
     content = content[0...MAX_CONTENT_LENGTH]
 

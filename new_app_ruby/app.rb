@@ -23,7 +23,7 @@ DB = Sequel.connect(
   max_connections: Integer(ENV.fetch('DB_POOL', '10')),
   test: true
 )
-
+# exam comment
 # ----------------------------
 # Prometheus metrics
 # ----------------------------

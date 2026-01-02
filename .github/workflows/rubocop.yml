@@ -1,6 +1,8 @@
 name: RuboCop Lint
 
 on:
+  push:
+    branches: exam
   pull_request:
     branches: [dev]
 jobs:

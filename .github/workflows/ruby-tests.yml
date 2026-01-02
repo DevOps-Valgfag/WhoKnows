@@ -2,7 +2,7 @@ name: Ruby tests (RSpec)
 
 on:
   push:
-    branches: [ dev, "featureWorkflowKorrektur" ]
+    branches: [ dev, exam ]
   pull_request:
 
 jobs:

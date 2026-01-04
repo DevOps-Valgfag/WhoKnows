@@ -61,24 +61,6 @@ RSpec.describe 'Analytics API' do
     end
   end
 
-  describe 'POST /api/beacon/time-on-page' do
-    it 'accepts valid beacon data' do
-      post '/api/beacon/time-on-page',
-           { path: '/', time_ms: 5000 }.to_json,
-           'CONTENT_TYPE' => 'application/json'
-
-      expect(last_response.status).to eq(204)
-    end
-
-    it 'rejects invalid JSON' do
-      post '/api/beacon/time-on-page',
-           'not json',
-           'CONTENT_TYPE' => 'application/json'
-
-      expect(last_response.status).to eq(400)
-    end
-  end
-
   describe 'GET /metrics' do
     it 'includes new metrics in output' do
       get '/metrics'
@@ -93,7 +75,6 @@ RSpec.describe 'Analytics API' do
       expect(body).to include('whoknows_active_sessions')
       expect(body).to include('whoknows_search_duration_seconds')
       expect(body).to include('whoknows_weather_api_duration_seconds')
-      expect(body).to include('whoknows_time_on_page_seconds')
     end
   end
 end

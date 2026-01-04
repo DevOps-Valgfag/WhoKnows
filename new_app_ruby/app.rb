@@ -90,14 +90,6 @@ WEATHER_API_LATENCY = Prometheus::Client::Histogram.new(
   buckets: [0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
 )
 
-# NEW: Time on page histogram (seconds)
-TIME_ON_PAGE = Prometheus::Client::Histogram.new(
-  :whoknows_time_on_page_seconds,
-  docstring: 'Time users spend on pages',
-  labels: [:path],
-  buckets: [5, 15, 30, 60, 120, 300, 600]
-)
-
 PROM_REGISTRY.register(SEARCH_COUNTER)
 PROM_REGISTRY.register(SEARCH_MATCH_COUNTER)
 PROM_REGISTRY.register(USER_REGISTERED)
@@ -108,7 +100,6 @@ PROM_REGISTRY.register(PAGE_VIEW_COUNTER)
 PROM_REGISTRY.register(ACTIVE_SESSIONS)
 PROM_REGISTRY.register(SEARCH_LATENCY)
 PROM_REGISTRY.register(WEATHER_API_LATENCY)
-PROM_REGISTRY.register(TIME_ON_PAGE)
 
 # ----------------------------
 # In-memory storage for recent searches (no DB needed)
@@ -253,9 +244,9 @@ before do
     env['g']['user'] = nil
   end
 
-  # Track page views (skip API/metrics/assets)
+  # Track page views (skip metrics/assets)
   path = request.path_info
-  unless path.start_with?('/api/beacon', '/metrics', '/assets', '/favicon')
+  unless path.start_with?('/metrics', '/assets', '/favicon')
     is_logged_in = !env['g']['user'].nil?
     # Normalize path for metrics (avoid high cardinality)
     normalized_path = normalize_path_for_metrics(path)
@@ -684,28 +675,6 @@ get '/api/recent-searches' do
     total_in_memory: RECENT_SEARCHES.size,
     max_stored: MAX_RECENT_SEARCHES
   )
-end
-
-# POST /api/beacon/time-on-page - Client-side beacon for time tracking
-post '/api/beacon/time-on-page' do
-  request.body.rewind
-  begin
-    data = JSON.parse(request.body.read)
-    path = data['path']
-    time_ms = data['time_ms']&.to_i
-
-    if path && time_ms && time_ms > 0
-      normalized_path = normalize_path_for_metrics(path)
-      time_seconds = time_ms / 1000.0
-      TIME_ON_PAGE.observe(time_seconds, labels: { path: normalized_path })
-    end
-
-    status 204
-    ''
-  rescue JSON::ParserError
-    status 400
-    json(error: 'Invalid JSON')
-  end
 end
 
 # GET /api/analytics/summary - Quick summary of key metrics

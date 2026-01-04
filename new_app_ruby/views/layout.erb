@@ -45,3 +45,36 @@
     <a href="/about">About</a>
   </div>
 </div>
+<script>
+// Time-on-page tracking
+(function() {
+  var startTime = Date.now();
+  var path = window.location.pathname;
+
+  function sendBeacon() {
+    var timeOnPage = Date.now() - startTime;
+    if (timeOnPage > 1000) { // Only send if > 1 second
+      navigator.sendBeacon('/api/beacon/time-on-page', JSON.stringify({
+        path: path,
+        time_ms: timeOnPage
+      }));
+    }
+  }
+
+  // Send when user leaves page
+  window.addEventListener('pagehide', sendBeacon);
+  window.addEventListener('beforeunload', sendBeacon);
+
+  // Also send periodically for long sessions (every 5 min)
+  setInterval(function() {
+    var timeOnPage = Date.now() - startTime;
+    fetch('/api/beacon/time-on-page', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: path, time_ms: timeOnPage }),
+      keepalive: true
+    }).catch(function() {}); // Ignore errors
+    startTime = Date.now(); // Reset for next interval
+  }, 300000);
+})();
+</script>

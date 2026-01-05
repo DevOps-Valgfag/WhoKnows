@@ -29,6 +29,7 @@ DB = Sequel.connect(
 # ----------------------------
 PROM_REGISTRY = Prometheus::Client.registry
 
+# Existing metrics
 SEARCH_COUNTER = Prometheus::Client::Counter.new(
   :whoknows_search_total,
   docstring: 'Total number of searches',
@@ -48,10 +49,81 @@ USER_LOGGED_IN = Prometheus::Client::Counter.new(
   docstring: 'Total number of successful logins'
 )
 
+# NEW: Session duration histogram (seconds)
+SESSION_DURATION = Prometheus::Client::Histogram.new(
+  :whoknows_session_duration_seconds,
+  docstring: 'Duration of user sessions in seconds',
+  buckets: [60, 300, 600, 1800, 3600, 7200, 14_400, 28_800] # 1min to 8hrs
+)
+
+# NEW: Failed login attempts counter
+FAILED_LOGIN_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_failed_login_total,
+  docstring: 'Total number of failed login attempts',
+  labels: [:reason]
+)
+
+# NEW: Page views counter with logged-in status
+PAGE_VIEW_COUNTER = Prometheus::Client::Counter.new(
+  :whoknows_page_views_total,
+  docstring: 'Total page views',
+  labels: %i[path logged_in]
+)
+
+# NEW: Active sessions gauge
+ACTIVE_SESSIONS = Prometheus::Client::Gauge.new(
+  :whoknows_active_sessions,
+  docstring: 'Current number of active user sessions'
+)
+
+# NEW: Search latency histogram
+SEARCH_LATENCY = Prometheus::Client::Histogram.new(
+  :whoknows_search_duration_seconds,
+  docstring: 'Search request duration in seconds',
+  buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5]
+)
+
+# NEW: Weather API latency histogram
+WEATHER_API_LATENCY = Prometheus::Client::Histogram.new(
+  :whoknows_weather_api_duration_seconds,
+  docstring: 'Weather API request duration in seconds',
+  buckets: [0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+)
+
 PROM_REGISTRY.register(SEARCH_COUNTER)
 PROM_REGISTRY.register(SEARCH_MATCH_COUNTER)
 PROM_REGISTRY.register(USER_REGISTERED)
 PROM_REGISTRY.register(USER_LOGGED_IN)
+PROM_REGISTRY.register(SESSION_DURATION)
+PROM_REGISTRY.register(FAILED_LOGIN_COUNTER)
+PROM_REGISTRY.register(PAGE_VIEW_COUNTER)
+PROM_REGISTRY.register(ACTIVE_SESSIONS)
+PROM_REGISTRY.register(SEARCH_LATENCY)
+PROM_REGISTRY.register(WEATHER_API_LATENCY)
+
+# ----------------------------
+# In-memory storage for recent searches (no DB needed)
+# ----------------------------
+RECENT_SEARCHES_MUTEX = Mutex.new
+RECENT_SEARCHES = []
+MAX_RECENT_SEARCHES = 100
+
+def log_search(query, language, results_count, user_id = nil)
+  RECENT_SEARCHES_MUTEX.synchronize do
+    RECENT_SEARCHES.unshift({
+                              query: query,
+                              language: language,
+                              results_count: results_count,
+                              user_id: user_id,
+                              timestamp: Time.now.iso8601
+                            })
+    RECENT_SEARCHES.pop while RECENT_SEARCHES.size > MAX_RECENT_SEARCHES
+  end
+end
+
+# In-memory session tracking for duration calculation
+SESSION_TRACKER_MUTEX = Mutex.new
+SESSION_LOGIN_TIMES = {} # session_id => login_time
 
 configure do
   set :trust_proxy, true
@@ -171,6 +243,31 @@ before do
   else
     env['g']['user'] = nil
   end
+
+  # Track page views (skip metrics/assets)
+  path = request.path_info
+  unless path.start_with?('/metrics', '/assets', '/favicon')
+    is_logged_in = !env['g']['user'].nil?
+    # Normalize path for metrics (avoid high cardinality)
+    normalized_path = normalize_path_for_metrics(path)
+    PAGE_VIEW_COUNTER.increment(labels: { path: normalized_path, logged_in: is_logged_in.to_s })
+  end
+end
+
+# Helper to normalize paths for metrics (avoid cardinality explosion)
+def normalize_path_for_metrics(path)
+  case path
+  when '/' then 'home'
+  when %r{^/api/search} then 'search'
+  when %r{^/api/weather} then 'weather_api'
+  when '/weather' then 'weather'
+  when '/login' then 'login'
+  when '/register' then 'register'
+  when '/about' then 'about'
+  when '/docs' then 'docs'
+  when '/change_password' then 'change_password'
+  else 'other'
+  end
 end
 
 # ----------------------------
@@ -181,9 +278,16 @@ get '/' do
   language = params['language'] || 'en'
 
   if q
+    start_time = Time.now
     @search_results = perform_search(DB, q, language)
+    SEARCH_LATENCY.observe(Time.now - start_time)
+
     SEARCH_COUNTER.increment(labels: { language: language })
     SEARCH_MATCH_COUNTER.increment(labels: { language: language }) if @search_results.any?
+
+    # Log search for recent searches list
+    user_id = env['g']['user'] ? env['g']['user'][:id] : nil
+    log_search(q, language, @search_results.count, user_id)
   else
     @search_results = []
   end
@@ -196,9 +300,16 @@ get '/api/search' do
   language = params['language'] || 'en'
 
   if q
+    start_time = Time.now
     @search_results = perform_search(DB, q, language)
+    SEARCH_LATENCY.observe(Time.now - start_time)
+
     SEARCH_COUNTER.increment(labels: { language: language })
     SEARCH_MATCH_COUNTER.increment(labels: { language: language }) if @search_results.any?
+
+    # Log search for recent searches list
+    user_id = env['g']['user'] ? env['g']['user'][:id] : nil
+    log_search(q, language, @search_results.count, user_id)
   else
     @search_results = []
   end
@@ -218,11 +329,19 @@ post '/api/login' do
   error = nil
   if user.nil?
     error = 'Invalid username'
+    FAILED_LOGIN_COUNTER.increment(labels: { reason: 'invalid_username' })
   elsif !verify_password(user[:password], password)
     error = 'Invalid password'
+    FAILED_LOGIN_COUNTER.increment(labels: { reason: 'invalid_password' })
   else
     session[:user_id] = user[:id]
     USER_LOGGED_IN.increment
+
+    # Track session start time for duration calculation
+    SESSION_TRACKER_MUTEX.synchronize do
+      SESSION_LOGIN_TIMES[session.id] = Time.now
+    end
+    ACTIVE_SESSIONS.increment
 
     if user[:must_change_password].to_i == 1
       redirect '/change_password'
@@ -349,6 +468,16 @@ post '/api/register' do
 end
 
 get '/api/logout' do
+  # Calculate session duration before clearing
+  SESSION_TRACKER_MUTEX.synchronize do
+    login_time = SESSION_LOGIN_TIMES.delete(session.id)
+    if login_time
+      duration = Time.now - login_time
+      SESSION_DURATION.observe(duration)
+      ACTIVE_SESSIONS.decrement
+    end
+  end
+
   session.clear
   flash[:info] = 'Thank you for now. Log in again to continue searching and get the most out of the application.'
   redirect '/login'
@@ -439,6 +568,7 @@ API_RESPONSE_TIMEOUT = ENV.fetch('API_RESPONSE_TIMEOUT', 5).to_f
 get '/api/weather' do
   city = params['city'] || 'Copenhagen'
   result_queue = Queue.new
+  start_time = Time.now
 
   # Start fetching weather data in a background thread
   fetch_thread = Thread.new do
@@ -451,6 +581,7 @@ get '/api/weather' do
   # Wait for result with soft timeout
   begin
     result = Timeout.timeout(API_RESPONSE_TIMEOUT) { result_queue.pop }
+    WEATHER_API_LATENCY.observe(Time.now - start_time)
 
     if result[:success] && result[:data]
       content_type :json
@@ -460,6 +591,7 @@ get '/api/weather' do
       json(error: "Couldn't fetch weather data for: #{city}")
     end
   rescue Timeout::Error
+    WEATHER_API_LATENCY.observe(Time.now - start_time)
     # Soft timeout exceeded - respond gracefully before SLA deadline
     warn "[weather] soft timeout for #{city} - responding with try-again message"
     fetch_thread.kill # Clean up the background thread
@@ -524,4 +656,40 @@ def verify_password(stored_hash, password)
   BCrypt::Password.new(stored_hash) == password
 rescue BCrypt::Errors::InvalidHash
   false
+end
+
+# ----------------------------
+# Analytics API endpoints
+# ----------------------------
+
+# GET /api/recent-searches - Returns the last N search queries
+get '/api/recent-searches' do
+  limit = [params['limit']&.to_i || 50, MAX_RECENT_SEARCHES].min
+  limit = 10 if limit <= 0
+
+  searches = RECENT_SEARCHES_MUTEX.synchronize { RECENT_SEARCHES.first(limit) }
+
+  content_type :json
+  json(
+    searches: searches,
+    total_in_memory: RECENT_SEARCHES.size,
+    max_stored: MAX_RECENT_SEARCHES
+  )
+end
+
+# GET /api/analytics/summary - Quick summary of key metrics
+get '/api/analytics/summary' do
+  searches = RECENT_SEARCHES_MUTEX.synchronize { RECENT_SEARCHES.dup }
+
+  # Calculate top search terms (last 100 searches)
+  term_counts = searches.each_with_object(Hash.new(0)) { |s, h| h[s[:query].downcase] += 1 }
+  top_terms = term_counts.sort_by { |_, v| -v }.first(10).to_h
+
+  content_type :json
+  json(
+    recent_searches_count: searches.size,
+    top_search_terms: top_terms,
+    searches_with_results: searches.count { |s| s[:results_count] > 0 },
+    searches_without_results: searches.count { |s| s[:results_count] == 0 }
+  )
 end

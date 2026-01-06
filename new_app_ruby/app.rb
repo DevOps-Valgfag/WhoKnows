@@ -14,13 +14,13 @@ require 'pg'
 
 require 'prometheus/client'
 require 'prometheus/client/formats/text'
-# exam
+# exam comment
 # ----------------------------
 # DB (Postgres via DATABASE_URL)
 # ----------------------------
 DB = Sequel.connect(
   ENV.fetch('DATABASE_URL'),
-  max_connections: Integer(ENV.fetch('DB_POOL', '10')),
+  max_connections: Integer(ENV.fetch('DB_POOL', "10")),
   test: true
 )
 # exam comment

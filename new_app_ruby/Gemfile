@@ -2,10 +2,10 @@
 source 'https://rubygems.org'
 
 # Web framework
-gem 'sinatra', '~> 3.2'
+gem 'sinatra', '~> 4.2'
 
 # Ekstra Sinatra-helpers (fx sinatra/json)
-gem 'sinatra-contrib', '~> 3.2'
+gem 'sinatra-contrib', '~> 4.2'
 
 # Flash messages
 gem 'sinatra-flash', '~> 0.3.0'
